@@ -1,0 +1,91 @@
+<view class="container">
+  <!-- 顶部收支看板（类似普普管家） -->
+  <view class="card header-card">
+    <view class="card-title">收支概览 (今日)</view>
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-label">今日毛利(元)</text>
+        <text class="stat-value profit">¥ {{stats.profit}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">今日收入(元)</text>
+        <text class="stat-value">¥ {{stats.income}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">今日支出(元)</text>
+        <text class="stat-value">¥ {{stats.expense}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">在库设备(台)</text>
+        <text class="stat-value">{{stats.stockCount}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 🤖 核心亮眼入口：AI 智能助手开单 -->
+  <view class="card ai-card" bindtap="toggleAiChat">
+    <view class="ai-header">
+      <view class="ai-title">
+        <text class="ai-icon">🤖</text>
+        <text class="title-text">ONTO 手机店 AI 管家</text>
+      </view>
+      <text class="badge">自然语言开单/查账</text>
+    </view>
+    <view class="ai-tip">点击展开对话，输入如：“收了一台13 Pro 成本2300”</view>
+  </view>
+
+  <!-- AI 对话浮层/区域 -->
+  <view class="card chat-container" wx:if="{{showAiChat}}">
+    <scroll-view class="chat-list" scroll-y scroll-into-view="{{lastMsgId}}">
+      <block wx:for="{{messages}}" wx:key="index">
+        <!-- 机器人的消息 -->
+        <view wx:if="{{item.role === 'assistant'}}" class="msg-robot">
+          
+          <!-- 1. 纯文本回复 (确保渲染的是 .content 字符串) -->
+          <view class="bubble" wx:if="{{item.content}}">
+            {{item.content}}
+          </view>
+
+          <!-- 2. 如果有 parsedData，渲染成漂亮的【确认入库卡片】 -->
+          <view class="card-box" wx:if="{{item.parsedData}}">
+            <view class="card-title">📦 设备解析成功</view>
+            <view class="card-item">型号：{{item.parsedData.model}}</view>
+            <view class="card-item">成本：￥{{item.parsedData.cost}}</view>
+            <view class="card-item" wx:if="{{item.parsedData.notes}}">备注：{{item.parsedData.notes}}</view>
+            <button class="btn-confirm" bindtap="onConfirmAdd">确认入库</button>
+          </view>
+
+        </view>
+      </block>
+    </scroll-view>
+
+    <!-- 输入框与发送 -->
+    <view class="chat-input-area">
+      <input class="input" value="{{inputMsg}}" bindinput="onInput" placeholder="输入开单/估价/查账指令..." confirm-type="send" bindconfirm="sendToAgent" />
+      <button class="send-btn" type="primary" size="mini" bindtap="sendToAgent">发送</button>
+    </view>
+  </view>
+
+  <!-- 常用功能金刚区（普普管家同款功能入口） -->
+  <view class="card">
+    <view class="card-title">常用业务</view>
+    <view class="menu-grid">
+      <view class="menu-item">
+        <text class="menu-icon">📱</text>
+        <text>二手库存</text>
+      </view>
+      <view class="menu-item">
+        <text class="menu-icon">📦</text>
+        <text>新机出入库</text>
+      </view>
+      <view class="menu-item">
+        <text class="menu-icon">🔧</text>
+        <text>维修开单</text>
+      </view>
+      <view class="menu-item">
+        <text class="menu-icon">🛠️</text>
+        <text>配件库存</text>
+      </view>
+    </view>
+  </view>
+</view>

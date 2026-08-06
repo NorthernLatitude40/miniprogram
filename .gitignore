@@ -1,0 +1,10 @@
+# 微信开发者工具产生的临时/私有文件
+node_modules/
+miniprogram_npm/
+.project
+project.private.config.json   <-- ⚠️ 非常重要！这个文件里包含你的AppID和本地个人配置，绝对不能上传！
+
+# 系统或环境文件
+.DS_Store
+Thumbs.db
+*.log
