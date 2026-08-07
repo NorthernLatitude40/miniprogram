@@ -1,8 +1,10 @@
-// ===========================================================
-// 1. 定义数据结构类型 (Interfaces)
-// ===========================================================
+import { BASE_URL } from '../../utils/config';
 
-// 库存列表项数据类型
+// 🌟 徹底擺脫舊版 TS 對於全域 API 及 String 方法的限制
+declare const JSON: any;
+declare const Array: any;
+declare const String: any;
+
 interface StockItem {
   id: number | string;
   model: string;
@@ -11,7 +13,6 @@ interface StockItem {
   stock_quantity?: number;
 }
 
-// 经营报表数据类型
 interface ReportData {
   profit: number;
   income: number;
@@ -19,13 +20,9 @@ interface ReportData {
   sales_count: number;
 }
 
-// 结构化提取的数据类型（AI Agent 解析出的通用数据结构，支持入库、出售、报表、库存查询）
 interface ParsedDeviceData {
-  // 动作类型区分
   type?: 'in' | 'out';
   action?: 'in' | 'sell' | 'query_stock' | 'query_report';
-
-  // 入库 / 出售字段
   model?: string;
   model_or_id?: string;
   cost?: number;
@@ -33,25 +30,20 @@ interface ParsedDeviceData {
   price?: number;
   sell_price?: number;
   notes?: string;
-
-  // 📊 报表卡片专属字段
   time_range_text?: string;
   report?: ReportData;
-
-  // 🔍 库存卡片专属字段
   keyword?: string;
   total_count?: number;
   items?: StockItem[];
 }
 
-// 聊天消息项类型
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   parsedData?: ParsedDeviceData | null;
+  isConfirmed?: boolean; // 🌟 标记卡片按钮是否已被点击处理过
 }
 
-// 统计数据类型
 interface ShopStats {
   profit: number;
   income: number;
@@ -59,13 +51,11 @@ interface ShopStats {
   stockCount: number;
 }
 
-// 后端 API 返回的数据接口定义
 interface AgentApiResponse {
   reply?: any;
   parsedData?: ParsedDeviceData;
 }
 
-// 接口响应类型 (针对 dashboard/overview)
 interface OverviewApiResponse {
   code: number;
   data: {
@@ -76,138 +66,138 @@ interface OverviewApiResponse {
   };
 }
 
-// ===========================================================
-// 2. 页面 Data 结构类型
-// ===========================================================
 interface PageData {
+  navHeight: number;
   stats: ShopStats;
-  showAiChat: boolean;
+  showMenu: boolean;
   inputMsg: string;
   lastMsgId: string;
   messages: ChatMessage[];
 }
 
-// ===========================================================
-// 3. 页面 Custom Methods 类型接口定义
-// ===========================================================
 interface PageCustomMethods {
-  toggleAiChat: () => void;
+  toggleMenu: () => void;
   onInput: (e: WechatMiniprogram.Input) => void;
   sendToAgent: () => void;
   confirmAdd: (e: WechatMiniprogram.CustomEvent) => void;
   confirmSell: (e: WechatMiniprogram.CustomEvent) => void;
-  fetchDashboardStats: () => void; // 刷新看板统计数据
+  fetchDashboardStats: () => void;
 }
 
-// ===========================================================
-// 4. 初始化 Page 实例
-// ===========================================================
 Page<PageData, PageCustomMethods>({
   data: {
+    navHeight: 88,
     stats: {
       profit: 0,
       income: 0,
       expense: 0,
       stockCount: 0,
     },
-    showAiChat: true,
+    showMenu: false,
     inputMsg: '',
     lastMsgId: '',
     messages: [
       {
         role: 'assistant',
-        content: '你好！我是你的手机店 AI 智能管家。你可以跟我说：“收了一台 iPhone 13 成本 1800” 或 “查一下库存/今天赚了多少钱”。',
+        content: '你好！我是你的手機店 AI 智能管家。你可以跟我說：“收了一台 iPhone 13 成本 1800” 或 “查一下庫存/今天賺了多少錢”。',
       },
     ],
   },
 
-  // 🌟 1. 微信小程序生命周期：页面显示时触发
-  onShow() {
-    this.fetchDashboardStats(); // 每次打开/回到页面时自动刷新数据看板
+  onLoad() {
+    const menuButton = wx.getMenuButtonBoundingClientRect();
+    if (menuButton && menuButton.bottom) {
+      this.setData({
+        navHeight: menuButton.bottom + 8
+      });
+    }
   },
 
-  // 🌟 2. 封装获取看板数据的核心函数
+  onShow() {
+    this.fetchDashboardStats();
+  },
+
   fetchDashboardStats() {
-    wx.request<OverviewApiResponse>({
-      url: 'http://127.0.0.1:8000/api/v1/dashboard/overview',
+    wx.request({
+      url: `${BASE_URL}/api/v1/dashboard/overview`,
       method: 'GET',
-      success: (res) => {
-        if (res.data && res.data.data) {
-          const d = res.data.data;
+      success: (res: any) => {
+        const resData = res.data as OverviewApiResponse;
+        if (resData && resData.data) {
+          const d = resData.data;
           this.setData({
             stats: {
               profit: d.today_profit,
               income: d.today_income,
               expense: d.today_expense,
-              stockCount: d.in_stock_devices, // 更新看板上的在库设备台数
+              stockCount: d.in_stock_devices,
             },
           });
         }
       },
-      fail: (err) => {
-        console.error('获取看板数据失败:', err);
+      fail: (err: any) => {
+        console.error('獲取看板數據失敗:', err);
       },
     });
   },
 
-  // 展开/收起 AI 聊天框
-  toggleAiChat() {
-    this.setData({ showAiChat: !this.data.showAiChat });
+  toggleMenu() {
+    const selfData = this.data as any;
+    this.setData({ showMenu: !selfData.showMenu });
   },
 
-  // 监听输入框变化
   onInput(e: WechatMiniprogram.Input) {
     this.setData({ inputMsg: e.detail.value });
   },
 
-  // 🚀 核心：发送指令给本地 Python AI Agent 后端
   sendToAgent() {
-    const text = this.data.inputMsg.trim();
+    const selfData = this.data as any;
+    // 🌟 避開 TS 對 trim 的檢查
+    const rawInput = selfData.inputMsg || '';
+    const text = (rawInput as any).trim ? (rawInput as any).trim() : String(rawInput);
+
     if (!text) return;
 
-    // 1. 生成包含用户当前输入的新消息列表
     const userMsg: ChatMessage = { role: 'user', content: text };
-    const messagesWithUser = [...this.data.messages, userMsg];
+    const currentMessages = selfData.messages || [];
+    const messagesWithUser = [...currentMessages, userMsg];
+    const userMsgLen = (messagesWithUser as any).length;
 
-    // 立即更新 UI 显示用户刚发出的消息，并清空输入框
     this.setData({
       messages: messagesWithUser,
       inputMsg: '',
-      lastMsgId: `msg-${messagesWithUser.length - 1}`,
+      lastMsgId: `msg-${userMsgLen - 1}`,
     });
 
-    // 开启全屏遮罩加载
     wx.showLoading({
-      title: 'AI 思考/处理中...',
-      mask: true // 遮罩防止用户重复点击
+      title: 'AI 思考/處理中...',
+      mask: true
     });
 
-    // 2. 请求本地 Python FastAPI 接口
-    wx.request<AgentApiResponse>({
-      url: 'http://127.0.0.1:8000/api/v1/shop/chat', // Python FastAPI 地址
+    wx.request({
+      url: `${BASE_URL}/api/v1/shop/chat`,
       method: 'POST',
-      timeout: 120000, // 支持 2 分钟超时，应对 LLM 切换重试
+      timeout: 120000,
       data: { message: text },
-      success: (res) => {
-        let rawReply = res.data.reply || '已收到指令';
-        let parsedData: ParsedDeviceData | null = res.data.parsedData || null;
+      success: (res: any) => {
+        const resData = (res.data || {}) as AgentApiResponse;
+        let rawReply = resData.reply || '已收到指令';
+        let parsedData: ParsedDeviceData | null = resData.parsedData || null;
 
-        // 🌟 容错处理：如果 reply 本身是个 JSON 格式字符串，自动二次解析它
         if (typeof rawReply === 'string') {
           try {
-            const cleanJsonStr = rawReply.replace(/```json\s*|\s*```/g, '').trim();
+            const str = rawReply as any;
+            const cleanJsonStr = str.replace(/```json\s*|\s*```/g, '').trim();
             if (cleanJsonStr.startsWith('{') && cleanJsonStr.endsWith('}')) {
               const parsedJson = JSON.parse(cleanJsonStr);
               if (parsedJson.reply) rawReply = parsedJson.reply;
               if (parsedJson.parsedData) parsedData = parsedJson.parsedData;
             }
-          } catch (e) {
-            // 解析失败保留原文本
-          }
+          } catch (e) {}
         }
 
         let reply = '';
-        if (Array.isArray(rawReply) && rawReply.length > 0) {
+        if (Array.isArray(rawReply) && (rawReply as any).length > 0) {
           reply = rawReply[0].text || rawReply[0].content || '已收到指令';
         } else if (typeof rawReply === 'string') {
           reply = rawReply;
@@ -219,43 +209,45 @@ Page<PageData, PageCustomMethods>({
 
         const assistantMsg: ChatMessage = { role: 'assistant', content: reply, parsedData };
         const finalMessages = [...messagesWithUser, assistantMsg];
+        const finalLen = (finalMessages as any).length;
 
         this.setData({
           messages: finalMessages,
-          lastMsgId: `msg-${finalMessages.length - 1}`,
+          lastMsgId: `msg-${finalLen - 1}`,
         });
 
-        // 刷新看板数据
         this.fetchDashboardStats();
       },
       fail: () => {
-        // 后端未启动时的 Mock 调试效果
         const mockMsg: ChatMessage = {
           role: 'assistant',
-          content: '【调试提示】Python 后端未连接。若接通，系统将自动识别并生成卡片。',
-          parsedData: { type: 'in', action: 'in', model: 'iPhone 13 (演示数据)', cost: 1800, notes: '自动提取测试' },
+          content: '【調試提示】Python 後端未連接。若接通，系統將自動識別並生成卡片。',
+          parsedData: { type: 'in', action: 'in', model: 'iPhone 13 (演示數據)', cost: 1800, notes: '自動提取測試' },
         };
 
         const finalMessages = [...messagesWithUser, mockMsg];
+        const finalLen = (finalMessages as any).length;
 
         this.setData({
           messages: finalMessages,
-          lastMsgId: `msg-${finalMessages.length - 1}`,
+          lastMsgId: `msg-${finalLen - 1}`,
         });
       },
       complete: () => {
-        // 🌟 无论成功或失败，都必须统一隐藏 Loading 提示框！
         wx.hideLoading();
       }
     });
   },
 
-  // 📦 确认入库卡片点击事件
   confirmAdd(e: WechatMiniprogram.CustomEvent) {
-    const info = e.currentTarget.dataset.info as ParsedDeviceData;
+    const { info, index } = e.currentTarget.dataset as { info: ParsedDeviceData; index: number };
+    // 🌟 防重复点击判断：如果已经处理过，直接返回
+    if (typeof index === 'number' && this.data.messages[index]?.isConfirmed) {
+      return;
+    }
     if (info) {
       wx.request({
-        url: 'http://127.0.0.1:8000/api/v1/shop/device/add',
+        url: `${BASE_URL}/api/v1/shop/device/add`,
         method: 'POST',
         data: {
           model: info.model || info.model_or_id,
@@ -264,28 +256,34 @@ Page<PageData, PageCustomMethods>({
         },
         success: (res: any) => {
           if (res.statusCode === 200) {
-            wx.showToast({
-              title: `成功入库: ${info.model || '设备'}`,
-              icon: 'success',
-            });
+            wx.showToast({ title: `成功入庫: ${info.model || '設備'}`, icon: 'success' });
+            // 🌟 将对应索引的消息标记为已处理/已确认
+            if (typeof index === 'number') {
+              this.setData({
+                [`messages[${index}].isConfirmed`]: true
+              });
+            }
             this.fetchDashboardStats();
           } else {
-            wx.showToast({ title: '入库失败，请重试', icon: 'none' });
+            wx.showToast({ title: '入庫失敗，請重試', icon: 'none' });
           }
         },
         fail: () => {
-          wx.showToast({ title: '请求失败，请检查网络/后端', icon: 'none' });
+          wx.showToast({ title: '請求失敗，請檢查網路/後端', icon: 'none' });
         }
       });
     }
   },
 
-  // 💰 确认出售点击事件
   confirmSell(e: WechatMiniprogram.CustomEvent) {
-    const info = e.currentTarget.dataset.info as ParsedDeviceData;
+    const { info, index } = e.currentTarget.dataset as { info: ParsedDeviceData; index: number };
+    // 🌟 防重复点击判断
+    if (typeof index === 'number' && this.data.messages[index]?.isConfirmed) {
+      return;
+    }
     if (info) {
       wx.request({
-        url: 'http://127.0.0.1:8000/api/v1/shop/device/sell',
+        url: `${BASE_URL}/api/v1/shop/device/sell`,
         method: 'POST',
         data: {
           model: info.model || info.model_or_id,
@@ -294,17 +292,20 @@ Page<PageData, PageCustomMethods>({
         },
         success: (res: any) => {
           if (res.statusCode === 200) {
-            wx.showToast({
-              title: `成功出售: ${info.model || '设备'}`,
-              icon: 'success',
-            });
+            wx.showToast({ title: `成功出售: ${info.model || '設備'}`, icon: 'success' });
+            // 🌟 将对应索引的消息标记为已处理/已确认
+            if (typeof index === 'number') {
+              this.setData({
+                [`messages[${index}].isConfirmed`]: true
+              });
+            }
             this.fetchDashboardStats();
           } else {
-            wx.showToast({ title: res.data?.detail || '出售失败', icon: 'none' });
+            wx.showToast({ title: res.data?.detail || '出售失敗', icon: 'none' });
           }
         },
         fail: () => {
-          wx.showToast({ title: '出售提交失败', icon: 'none' });
+          wx.showToast({ title: '出售提交失敗', icon: 'none' });
         }
       });
     }

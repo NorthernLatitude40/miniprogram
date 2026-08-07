@@ -1,79 +1,111 @@
-<view class="container">
-  <!-- 顶部收支看板 -->
-  <view class="card header-card">
-    <view class="card-title">收支概览 (今日)</view>
-    <view class="stats-grid">
-      <view class="stat-item">
-        <text class="stat-label">今日毛利(元)</text>
-        <text class="stat-value profit">¥ {{stats.profit}}</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-label">今日收入(元)</text>
-        <text class="stat-value">¥ {{stats.income}}</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-label">今日支出(元)</text>
-        <text class="stat-value">¥ {{stats.expense}}</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-label">在库设备(台)</text>
-        <text class="stat-value">{{stats.stockCount}}</text>
+<view class="app-container">
+  
+  <!-- 1. 顶部区域 (包含动态算出的胶囊安全高度) -->
+  <view class="header-section">
+    <!-- 💡 动态安全区：避开顶部状态栏和右上角胶囊 -->
+    <view class="safe-area-top" style="height: {{navHeight}}px;"></view>
+    
+    <!-- 收支概览看板 -->
+    <view class="card header-card">
+      <view class="card-title">收支概览 (今日)</view>
+      <view class="stats-grid">
+        <view class="stat-item">
+          <text class="stat-label">今日毛利(元)</text>
+          <text class="stat-value profit">¥ {{stats.profit}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-label">今日收入(元)</text>
+          <text class="stat-value">¥ {{stats.income}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-label">今日支出(元)</text>
+          <text class="stat-value">¥ {{stats.expense}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-label">在库设备(台)</text>
+          <text class="stat-value">{{stats.stockCount}}</text>
+        </view>
       </view>
     </view>
-  </view>
 
-  <!-- 🤖 核心亮眼入口：AI 智能助手开单 -->
-  <view class="card ai-card" bindtap="toggleAiChat">
-    <view class="ai-header">
+    <!-- 🤖 AI 标题横幅 -->
+    <view class="ai-banner">
       <view class="ai-title">
         <text class="ai-icon">🤖</text>
         <text class="title-text">ONTO 手机店 AI 管家</text>
       </view>
       <text class="badge">自然语言开单/查账</text>
     </view>
-    <view class="ai-tip">点击展开对话，输入如：“收了一台13 Pro 成本2300”</view>
   </view>
 
-  <!-- AI 对话浮层/区域 -->
-  <view class="card chat-container" wx:if="{{showAiChat}}">
-    <scroll-view class="chat-list" scroll-y scroll-into-view="{{lastMsgId}}">
+  <!-- 2. 中间 AI 聊天主区域 -->
+  <view class="chat-container">
+    <!-- 🌟 修正：补全 scroll-view 的关键属性与增强滑动性能 -->
+    <scroll-view 
+      class="chat-list" 
+      scroll-y="true" 
+      scroll-into-view="{{lastMsgId}}"
+      scroll-with-animation="true"
+      enhanced="true"
+      bounces="true"
+      show-scrollbar="true"
+    >
       <block wx:for="{{messages}}" wx:key="index">
         
-        <!-- 🙋‍♂️ 1. 用户发出的消息 (靠右显示) -->
+        <!-- 用户消息 -->
         <view id="msg-{{index}}" class="msg-item user" wx:if="{{item.role === 'user'}}">
           <view class="bubble">{{item.content}}</view>
         </view>
 
-        <!-- 🤖 2. 机器人的回复 (靠左显示) -->
+        <!-- 机器人回复 -->
         <view id="msg-{{index}}" class="msg-item robot" wx:if="{{item.role === 'assistant'}}">
           <view class="robot-content">
-            <!-- 纯文本回复 -->
-            <view class="bubble" wx:if="{{item.content}}">
-              {{item.content}}
-            </view>
+            <view class="bubble" wx:if="{{item.content}}">{{item.content}}</view>
 
-            <!-- 卡片渲染逻辑（根据 type 或 action 精确互斥判断） -->
+            <!-- 解析卡片 -->
             <block wx:if="{{item.parsedData}}">
               
-              <!-- 📦 2.1 确认入库卡片 -->
+              <!-- 入库卡片 -->
               <view class="parsed-card card-in" wx:if="{{item.parsedData.type === 'in' || item.parsedData.action === 'in'}}">
                 <view class="card-title title-in">📦 设备解析成功 (入库)</view>
                 <view class="card-item">型号：{{item.parsedData.model || item.parsedData.model_or_id}}</view>
                 <view class="card-item">成本：￥{{item.parsedData.cost || item.parsedData.cost_price}}</view>
                 <view class="card-item" wx:if="{{item.parsedData.notes}}">备注：{{item.parsedData.notes}}</view>
-                <button class="confirm-btn btn-in" size="mini" bindtap="confirmAdd" data-info="{{item.parsedData}}">确认入库</button>
+                
+                <!-- 🌟 增加了 disabled, class 条件判断, data-index 和动态文字 -->
+                <button 
+                  class="confirm-btn btn-in {{item.isConfirmed ? 'btn-disabled' : ''}}" 
+                  size="mini" 
+                  disabled="{{item.isConfirmed}}"
+                  bindtap="confirmAdd" 
+                  data-info="{{item.parsedData}}"
+                  data-index="{{index}}"
+                >
+                  {{item.isConfirmed ? '已完成入库' : '确认入库'}}
+                </button>
               </view>
 
-              <!-- 💰 2.2 确认出售卡片 -->
+              <!-- 出售卡片 -->
               <view class="parsed-card card-out" wx:elif="{{item.parsedData.type === 'out' || item.parsedData.action === 'sell'}}">
                 <view class="card-title title-out">💰 设备解析成功 (出售)</view>
                 <view class="card-item">型号：{{item.parsedData.model || item.parsedData.model_or_id}}</view>
                 <view class="card-item">售价：￥{{item.parsedData.price || item.parsedData.sell_price}}</view>
                 <view class="card-item" wx:if="{{item.parsedData.notes}}">备注：{{item.parsedData.notes}}</view>
-                <button class="confirm-btn btn-out" size="mini" bindtap="confirmSell" data-info="{{item.parsedData}}">确认出售/出库</button>
+                
+                <!-- 🌟 增加了 disabled, class 条件判断, data-index 和动态文字 -->
+                <button 
+                  class="confirm-btn btn-out {{item.isConfirmed ? 'btn-disabled' : ''}}" 
+                  size="mini" 
+                  disabled="{{item.isConfirmed}}"
+                  bindtap="confirmSell" 
+                  data-info="{{item.parsedData}}"
+                  data-index="{{index}}"
+                >
+                  {{item.isConfirmed ? '已完成出库' : '确认出售/出库'}}
+                </button>
               </view>
 
-              <!-- 📊 2.3 经营报表概览卡片 -->
+              <!-- 报表卡片 -->
               <view class="parsed-card card-report" wx:elif="{{item.parsedData.action === 'query_report'}}">
                 <view class="card-title title-report">
                   <text>📊 {{item.parsedData.time_range_text || '经营'}}报表概览</text>
@@ -98,19 +130,17 @@
                 </view>
               </view>
 
-              <!-- 🔍 2.4 库存/设备搜索列表卡片 -->
+              <!-- 库存卡片 -->
               <view class="parsed-card card-stock" wx:elif="{{item.parsedData.action === 'query_stock'}}">
                 <view class="card-title title-stock">
                   <text>🔍 库存查询结果</text>
                   <text class="stock-badge">共 {{item.parsedData.total_count || 0}} 台</text>
                 </view>
 
-                <!-- 无数据时的提示 -->
                 <view class="empty-tip" wx:if="{{!item.parsedData.items || item.parsedData.items.length === 0}}">
                   未找到与“{{item.parsedData.keyword}}”相关的在库设备
                 </view>
 
-                <!-- 搜到的列表数据 -->
                 <view class="stock-list" wx:else>
                   <block wx:for="{{item.parsedData.items}}" wx:key="id" wx:for-item="stock">
                     <view class="stock-item">
@@ -131,40 +161,53 @@
               </view>
 
             </block>
-
           </view>
         </view>
 
       </block>
+      
+      <!-- 🌟 底部垫高块：确保最后一条消息/卡片完全露出，不被输入框挡住 -->
+      <view style="height: 30rpx; width: 100%;"></view>
     </scroll-view>
 
-    <!-- 输入框与发送 -->
-    <view class="chat-input-area">
-      <input class="input" value="{{inputMsg}}" bindinput="onInput" placeholder="输入开单/估价/查账指令..." confirm-type="send" bindconfirm="sendToAgent" />
-      <button class="send-btn" type="primary" size="mini" bindtap="sendToAgent">发送</button>
-    </view>
-  </view>
+    <!-- 3. 底部输入与常用业务控制栏 -->
+    <view class="chat-footer">
+      <view class="chat-input-row">
+        <!-- 👈 常用业务控制按钮 -->
+        <view class="menu-toggle-btn {{showMenu ? 'active' : ''}}" bindtap="toggleMenu">
+          <text class="toggle-icon">🛠️</text>
+          <text class="toggle-text">业务</text>
+        </view>
 
-  <!-- 常用功能金刚区 -->
-  <view class="card">
-    <view class="card-title">常用业务</view>
-    <view class="menu-grid">
-      <view class="menu-item">
-        <text class="menu-icon">📱</text>
-        <text class="menu-text">二手库存</text>
+        <!-- 输入框 -->
+        <input class="input" value="{{inputMsg}}" bindinput="onInput" placeholder="输入开单/估价/查账指令..." confirm-type="send" bindconfirm="sendToAgent" />
+        
+        <!-- 发送按钮 -->
+        <button class="send-btn" type="primary" size="mini" bindtap="sendToAgent">发送</button>
       </view>
-      <view class="menu-item">
-        <text class="menu-icon">📦</text>
-        <text class="menu-text">新机出入库</text>
-      </view>
-      <view class="menu-item">
-        <text class="menu-icon">🔧</text>
-        <text class="menu-text">维修开单</text>
-      </view>
-      <view class="menu-item">
-        <text class="menu-icon">🛠️</text>
-        <text class="menu-text">配件库存</text>
+
+      <!-- 点击后弹出的常用业务抽屉菜单 -->
+      <view class="menu-drawer" wx:if="{{showMenu}}">
+        <view class="menu-grid">
+          <view class="menu-item">
+            <text class="menu-icon">📱</text>
+            <text class="menu-text">二手库存</text>
+          </view>
+          <view class="menu-item">
+            <text class="menu-icon">📦</text>
+            <text class="menu-text">新机出入库</text>
+          </view>
+          <view class="menu-item">
+            <text class="menu-icon">🔧</text>
+            <text class="menu-text">维修开单</text>
+          </view>
+          <view class="menu-item">
+            <text class="menu-icon">🛠️</text>
+            <text class="menu-text">配件库存</text>
+          </view>
+        </view>
       </view>
     </view>
+
   </view>
 </view>
