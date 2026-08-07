@@ -95,87 +95,298 @@ page {
   padding: 10rpx;
 }
 
+/* 消息行基础结构 */
 .msg-item {
   display: flex;
-  margin-bottom: 20rpx;
+  margin-bottom: 24rpx;
+  width: 100%;
 }
 
+/* 🙋‍♂️ 用户消息：右对齐 + 绿色气泡 */
 .msg-item.user {
-  flex-direction: row-reverse;
-}
-
-.avatar {
-  font-size: 40rpx;
-  margin: 0 10rpx;
-}
-
-.bubble {
-  max-width: 70%;
-  padding: 16rpx 20rpx;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-  background: #f0f0f0;
+  justify-content: flex-end;
 }
 
 .msg-item.user .bubble {
   background: #95ec69;
+  color: #000000;
+  border-top-right-radius: 4rpx;
 }
 
+/* 🤖 机器人消息：左对齐 + 灰色气泡 */
+.msg-item.robot {
+  justify-content: flex-start;
+}
+
+.robot-content {
+  max-width: 85%;
+}
+
+.msg-item.robot .bubble {
+  background: #f0f0f0;
+  color: #333333;
+  border-top-left-radius: 4rpx;
+}
+
+/* 微信气泡通用基础 */
+.bubble {
+  padding: 16rpx 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+/* 卡片通用基础 */
+.parsed-card {
+  background: #ffffff;
+  border: 1rpx solid #e5e5e5;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #333;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.parsed-card .card-title {
+  font-weight: bold;
+  font-size: 28rpx;
+  margin-bottom: 12rpx;
+}
+
+.parsed-card .card-item {
+  margin-bottom: 6rpx;
+}
+
+.confirm-btn {
+  margin-top: 16rpx !important;
+  width: 100% !important;
+}
+
+/* --- 入库卡片专属样式 --- */
+.parsed-card.card-in {
+  border: 1rpx solid #d9d9d9;
+  background-color: #ffffff;
+}
+
+.card-title.title-in {
+  color: #2b58f0;
+}
+
+.confirm-btn.btn-in {
+  background-color: #07c160 !important;
+  color: #ffffff !important;
+}
+
+/* --- 出售卡片专属样式 --- */
+.parsed-card.card-out {
+  border: 1rpx solid #ffe0b2;
+  background-color: #fffbe6;
+}
+
+.card-title.title-out {
+  color: #fa8c16;
+}
+
+.confirm-btn.btn-out {
+  background-color: #ff9800 !important;
+  color: #ffffff !important;
+}
+
+/* --- 📊 2.3 报表卡片专属样式 --- */
+.parsed-card.card-report {
+  background-color: #ffffff;
+  border: 1rpx solid #e2e8f0;
+  border-left: 8rpx solid #10b981; /* 绿色左侧高亮边条 */
+}
+
+.title-report {
+  color: #065f46 !important;
+  border-bottom: 1rpx solid #f1f5f9;
+  padding-bottom: 10rpx;
+  margin-bottom: 16rpx !important;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rpx;
+}
+
+.report-item {
+  background-color: #f8fafc;
+  border-radius: 8rpx;
+  padding: 12rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.report-item.highlight {
+  background-color: #ecfdf5;
+}
+
+.report-label {
+  font-size: 22rpx;
+  color: #64748b;
+}
+
+.report-val {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #1e293b;
+  margin-top: 4rpx;
+}
+
+.report-val.profit {
+  color: #10b981;
+}
+
+/* --- 🔍 2.4 库存卡片专属样式 --- */
+.parsed-card.card-stock {
+  background-color: #ffffff;
+  border: 1rpx solid #e2e8f0;
+  border-left: 8rpx solid #3b82f6; /* 蓝色左侧高亮边条 */
+}
+
+.title-stock {
+  color: #1e293b !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1rpx solid #f1f5f9;
+  padding-bottom: 10rpx;
+  margin-bottom: 16rpx !important;
+}
+
+.stock-badge {
+  font-size: 20rpx;
+  background-color: #eff6ff;
+  color: #2563eb;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+  font-weight: normal;
+}
+
+.stock-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx dashed #f1f5f9;
+}
+
+.stock-item:last-child {
+  border-bottom: none;
+}
+
+.stock-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.stock-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #334155;
+}
+
+.stock-tags {
+  display: flex;
+  gap: 8rpx;
+}
+
+.tag {
+  font-size: 20rpx;
+  padding: 2rpx 8rpx;
+  border-radius: 6rpx;
+}
+
+.spec-tag {
+  background-color: #f8fafc;
+  color: #64748b;
+  border: 1rpx solid #e2e8f0;
+}
+
+.id-tag {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+}
+
+.stock-price-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.stock-cost {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #059669;
+}
+
+.stock-qty {
+  font-size: 20rpx;
+  color: #94a3b8;
+}
+
+.empty-tip {
+  font-size: 24rpx;
+  color: #94a3b8;
+  text-align: center;
+  padding: 20rpx 0;
+}
+
+/* 底部输入框 */
 .chat-input-area {
   display: flex;
   align-items: center;
   margin-top: 10rpx;
+  padding-top: 10rpx;
+  border-top: 1rpx solid #eee;
 }
 
 .input {
   flex: 1;
   border: 1rpx solid #ddd;
   border-radius: 30rpx;
-  padding: 10rpx 20rpx;
+  padding: 10rpx 24rpx;
   font-size: 28rpx;
   background: #fafafa;
 }
 
 .send-btn {
-  margin-left: 10rpx;
+  margin-left: 12rpx;
 }
 
 /* 功能菜单网格 */
+/* 金刚区容器：网格布局 4 等分 */
 .menu-grid {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0 10rpx;
 }
 
+/* 单个菜单项：垂直居中排列 */
 .menu-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 24rpx;
-  color: #666;
+  justify-content: center;
 }
 
+/* 图标样式 */
 .menu-icon {
-  font-size: 50rpx;
-  margin-bottom: 8rpx;
+  font-size: 48rpx;
+  margin-bottom: 12rpx;
 }
 
-.parsed-card {
-  background: #fff;
-  border: 1rpx solid #eee;
-  padding: 12rpx;
-  border-radius: 8rpx;
-  margin-top: 10rpx;
+/* 文字样式：限制大小并防止文本拥挤 */
+.menu-item text:not(.menu-icon) {
   font-size: 24rpx;
-  color: #333;
-}
-
-.card-tag {
-  color: #2b58f0;
-  font-weight: bold;
-}
-
-.confirm-btn {
-  margin-top: 10rpx;
-  background-color: #07c160;
-  color: white;
+  color: #333333;
+  white-space: nowrap; /* 强制不换行 */
 }

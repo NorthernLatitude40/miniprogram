@@ -1,5 +1,5 @@
 <view class="container">
-  <!-- 顶部收支看板（类似普普管家） -->
+  <!-- 顶部收支看板 -->
   <view class="card header-card">
     <view class="card-title">收支概览 (今日)</view>
     <view class="stats-grid">
@@ -38,24 +38,103 @@
   <view class="card chat-container" wx:if="{{showAiChat}}">
     <scroll-view class="chat-list" scroll-y scroll-into-view="{{lastMsgId}}">
       <block wx:for="{{messages}}" wx:key="index">
-        <!-- 机器人的消息 -->
-        <view wx:if="{{item.role === 'assistant'}}" class="msg-robot">
-          
-          <!-- 1. 纯文本回复 (确保渲染的是 .content 字符串) -->
-          <view class="bubble" wx:if="{{item.content}}">
-            {{item.content}}
-          </view>
-
-          <!-- 2. 如果有 parsedData，渲染成漂亮的【确认入库卡片】 -->
-          <view class="card-box" wx:if="{{item.parsedData}}">
-            <view class="card-title">📦 设备解析成功</view>
-            <view class="card-item">型号：{{item.parsedData.model}}</view>
-            <view class="card-item">成本：￥{{item.parsedData.cost}}</view>
-            <view class="card-item" wx:if="{{item.parsedData.notes}}">备注：{{item.parsedData.notes}}</view>
-            <button class="btn-confirm" bindtap="onConfirmAdd">确认入库</button>
-          </view>
-
+        
+        <!-- 🙋‍♂️ 1. 用户发出的消息 (靠右显示) -->
+        <view id="msg-{{index}}" class="msg-item user" wx:if="{{item.role === 'user'}}">
+          <view class="bubble">{{item.content}}</view>
         </view>
+
+        <!-- 🤖 2. 机器人的回复 (靠左显示) -->
+        <view id="msg-{{index}}" class="msg-item robot" wx:if="{{item.role === 'assistant'}}">
+          <view class="robot-content">
+            <!-- 纯文本回复 -->
+            <view class="bubble" wx:if="{{item.content}}">
+              {{item.content}}
+            </view>
+
+            <!-- 卡片渲染逻辑（根据 type 或 action 精确互斥判断） -->
+            <block wx:if="{{item.parsedData}}">
+              
+              <!-- 📦 2.1 确认入库卡片 -->
+              <view class="parsed-card card-in" wx:if="{{item.parsedData.type === 'in' || item.parsedData.action === 'in'}}">
+                <view class="card-title title-in">📦 设备解析成功 (入库)</view>
+                <view class="card-item">型号：{{item.parsedData.model || item.parsedData.model_or_id}}</view>
+                <view class="card-item">成本：￥{{item.parsedData.cost || item.parsedData.cost_price}}</view>
+                <view class="card-item" wx:if="{{item.parsedData.notes}}">备注：{{item.parsedData.notes}}</view>
+                <button class="confirm-btn btn-in" size="mini" bindtap="confirmAdd" data-info="{{item.parsedData}}">确认入库</button>
+              </view>
+
+              <!-- 💰 2.2 确认出售卡片 -->
+              <view class="parsed-card card-out" wx:elif="{{item.parsedData.type === 'out' || item.parsedData.action === 'sell'}}">
+                <view class="card-title title-out">💰 设备解析成功 (出售)</view>
+                <view class="card-item">型号：{{item.parsedData.model || item.parsedData.model_or_id}}</view>
+                <view class="card-item">售价：￥{{item.parsedData.price || item.parsedData.sell_price}}</view>
+                <view class="card-item" wx:if="{{item.parsedData.notes}}">备注：{{item.parsedData.notes}}</view>
+                <button class="confirm-btn btn-out" size="mini" bindtap="confirmSell" data-info="{{item.parsedData}}">确认出售/出库</button>
+              </view>
+
+              <!-- 📊 2.3 经营报表概览卡片 -->
+              <view class="parsed-card card-report" wx:elif="{{item.parsedData.action === 'query_report'}}">
+                <view class="card-title title-report">
+                  <text>📊 {{item.parsedData.time_range_text || '经营'}}报表概览</text>
+                </view>
+                <view class="report-grid">
+                  <view class="report-item highlight">
+                    <text class="report-label">销售毛利</text>
+                    <text class="report-val profit">￥{{item.parsedData.report.profit || 0}}</text>
+                  </view>
+                  <view class="report-item">
+                    <text class="report-label">出售台数</text>
+                    <text class="report-val">{{item.parsedData.report.sales_count || 0}} 台</text>
+                  </view>
+                  <view class="report-item">
+                    <text class="report-label">营业收入</text>
+                    <text class="report-val">￥{{item.parsedData.report.income || 0}}</text>
+                  </view>
+                  <view class="report-item">
+                    <text class="report-label">进货支出</text>
+                    <text class="report-val">￥{{item.parsedData.report.expense || 0}}</text>
+                  </view>
+                </view>
+              </view>
+
+              <!-- 🔍 2.4 库存/设备搜索列表卡片 -->
+              <view class="parsed-card card-stock" wx:elif="{{item.parsedData.action === 'query_stock'}}">
+                <view class="card-title title-stock">
+                  <text>🔍 库存查询结果</text>
+                  <text class="stock-badge">共 {{item.parsedData.total_count || 0}} 台</text>
+                </view>
+
+                <!-- 无数据时的提示 -->
+                <view class="empty-tip" wx:if="{{!item.parsedData.items || item.parsedData.items.length === 0}}">
+                  未找到与“{{item.parsedData.keyword}}”相关的在库设备
+                </view>
+
+                <!-- 搜到的列表数据 -->
+                <view class="stock-list" wx:else>
+                  <block wx:for="{{item.parsedData.items}}" wx:key="id" wx:for-item="stock">
+                    <view class="stock-item">
+                      <view class="stock-main">
+                        <text class="stock-title">{{stock.model}}</text>
+                        <view class="stock-tags">
+                          <text class="tag spec-tag">{{stock.spec || '标准'}}</text>
+                          <text class="tag id-tag">ID: {{stock.id}}</text>
+                        </view>
+                      </view>
+                      <view class="stock-price-info">
+                        <text class="stock-cost">成本 ￥{{stock.cost}}</text>
+                        <text class="stock-qty" wx:if="{{stock.stock_quantity > 1}}">库存: {{stock.stock_quantity}}台</text>
+                      </view>
+                    </view>
+                  </block>
+                </view>
+              </view>
+
+            </block>
+
+          </view>
+        </view>
+
       </block>
     </scroll-view>
 
@@ -66,25 +145,25 @@
     </view>
   </view>
 
-  <!-- 常用功能金刚区（普普管家同款功能入口） -->
+  <!-- 常用功能金刚区 -->
   <view class="card">
     <view class="card-title">常用业务</view>
     <view class="menu-grid">
       <view class="menu-item">
         <text class="menu-icon">📱</text>
-        <text>二手库存</text>
+        <text class="menu-text">二手库存</text>
       </view>
       <view class="menu-item">
         <text class="menu-icon">📦</text>
-        <text>新机出入库</text>
+        <text class="menu-text">新机出入库</text>
       </view>
       <view class="menu-item">
         <text class="menu-icon">🔧</text>
-        <text>维修开单</text>
+        <text class="menu-text">维修开单</text>
       </view>
       <view class="menu-item">
         <text class="menu-icon">🛠️</text>
-        <text>配件库存</text>
+        <text class="menu-text">配件库存</text>
       </view>
     </view>
   </view>

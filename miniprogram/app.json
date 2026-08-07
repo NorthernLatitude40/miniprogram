@@ -3,6 +3,10 @@
     "pages/index/index",
     "pages/logs/logs"
   ],
+  "networkTimeout": {
+    "request": 120000,
+    "connectSocket": 120000
+  },
   "window": {
     "navigationBarTextStyle": "black",
     "navigationStyle": "custom"
