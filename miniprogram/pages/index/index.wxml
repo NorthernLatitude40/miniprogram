@@ -160,6 +160,43 @@
                 </view>
               </view>
 
+              <!-- 🌟 5. 新增：万能历史明细卡片 (通用流水/收支/入库/出库) -->
+              <view class="parsed-card card-universal" wx:elif="{{item.parsedData.action === 'universal_query'}}">
+                <view class="card-title title-universal">
+                  <text>📋 历史明细检索结果</text>
+                  <text class="stock-badge">共 {{item.parsedData.total_count || 0}} 笔</text>
+                </view>
+
+                <!-- 查无数据时的提示 -->
+                <view class="empty-tip" wx:if="{{!item.parsedData.items || item.parsedData.items.length === 0}}">
+                  暂无相关的历史明细记录
+                </view>
+
+                <!-- 明细列表 -->
+                <view class="stock-list" wx:else>
+                  <block wx:for="{{item.parsedData.items}}" wx:key="index" wx:for-item="record">
+                    <view class="stock-item">
+                      <view class="stock-main">
+                        <!-- 兼容显示：如果是手机显示型号，如果是账单显示分类 -->
+                        <text class="stock-title">{{record.model || record.category || record.sn || '明细记录'}}</text>
+                        <view class="stock-tags">
+                          <text class="tag spec-tag" wx:if="{{record.spec}}">{{record.spec}}</text>
+                          <text class="tag id-tag" wx:if="{{record.payment_method}}">{{record.payment_method}}</text>
+                          <text class="tag id-tag" wx:if="{{record.time}}">{{record.time}}</text>
+                        </view>
+                      </view>
+                      
+                      <view class="stock-price-info">
+                        <!-- 兼容显示金额/价格 -->
+                        <text class="stock-cost" wx:if="{{record.purchase_price !== undefined}}">￥{{record.purchase_price}}</text>
+                        <text class="stock-cost" wx:elif="{{record.amount !== undefined}}">￥{{record.amount}}</text>
+                        <text class="stock-qty" wx:if="{{record.type}}">{{record.type}}</text>
+                      </view>
+                    </view>
+                  </block>
+                </view>
+              </view>
+
             </block>
           </view>
         </view>

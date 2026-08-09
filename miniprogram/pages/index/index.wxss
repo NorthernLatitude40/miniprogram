@@ -318,3 +318,17 @@ button[disabled].confirm-btn {
   border-color: #cccccc !important;
   opacity: 0.6;
 }
+
+/* 万能卡片边框与标题样式 */
+.card-universal {
+  border-left: 8rpx solid #07c160; /* 采用绿色系或蓝紫色系 */
+}
+
+.title-universal {
+  color: #07c160;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  margin-bottom: 12rpx;
+}
