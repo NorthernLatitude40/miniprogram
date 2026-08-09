@@ -3,9 +3,9 @@
 // 1. 定義環境類別與型別
 export type Environment = 'development' | 'production';
 
-interface EnvConfig {
-  baseUrl: string;
-}
+// interface EnvConfig {
+//   baseUrl: string;
+// }
 
 // 2. 配置不同環境下的 Base URL
 const CONFIG_MAP = {

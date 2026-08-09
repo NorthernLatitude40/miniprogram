@@ -1,0 +1,21 @@
+<!-- pages/login/login.wxml -->
+<view class="login-container">
+  <view class="logo-area">
+    <!-- 你的手机店系统 Logo -->
+    <image class="logo" src="/assets/logo.png" mode="aspectFit"></image>
+    <text class="title">二手手机管理系统</text>
+    <text class="subtitle">员工与掌柜专享工作台</text>
+  </view>
+
+  <view class="action-area">
+    <!-- 微信一键登录按钮 -->
+    <button 
+      class="btn-login" 
+      type="primary" 
+      loading="{{isLoading}}" 
+      bindtap="handleWxLogin"
+    >
+      微信一键快捷登录
+    </button>
+  </view>
+</view>

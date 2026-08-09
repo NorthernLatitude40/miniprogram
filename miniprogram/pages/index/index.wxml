@@ -7,23 +7,39 @@
     
     <!-- 收支概览看板 -->
     <view class="card header-card">
-      <view class="card-title">收支概览 (今日)</view>
-      <view class="stats-grid">
-        <view class="stat-item">
-          <text class="stat-label">今日毛利(元)</text>
-          <text class="stat-value profit">¥ {{stats.profit}}</text>
+      <!-- 🌟 情况 A：有权限 (Admin / Manager) -> 正常展示数据看板 -->
+      <block wx:if="{{userRole === 'admin' || userRole === 'manager'}}">
+        <view class="card-header-bar">
+          <text class="card-title">今日经营概览</text>
+          <text class="role-badge {{userRole}}">{{userRole === 'admin' ? '管理员' : '店长'}}</text>
         </view>
-        <view class="stat-item">
-          <text class="stat-label">今日收入(元)</text>
-          <text class="stat-value">¥ {{stats.income}}</text>
+
+        <view class="stats-grid">
+          <view class="stat-item">
+            <text class="stat-label">今日毛利(元)</text>
+            <text class="stat-value profit">¥ {{stats.profit}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">今日收入(元)</text>
+            <text class="stat-value">¥ {{stats.income || 0}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">今日支出(元)</text>
+            <text class="stat-value">¥ {{stats.expense || 0}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">在库设备(台)</text>
+            <text class="stat-value count">{{stats.stockCount || 0}}</text>
+          </view>
         </view>
-        <view class="stat-item">
-          <text class="stat-label">今日支出(元)</text>
-          <text class="stat-value">¥ {{stats.expense}}</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-label">在库设备(台)</text>
-          <text class="stat-value">{{stats.stockCount}}</text>
+      </block>
+      <!-- 🌟 情况 B：无权限 (Staff) -> 替换为吸睛卡通 Banner -->
+      <view class="no-perm-banner" wx:else>
+        <!-- 这里可替换为你自己的卡通插图 URL，或者使用这个高颜值 AI 机器人矢量图 -->
+        <image class="banner-avatar" src="/assets/logo.png" mode="aspectFit"></image>
+        <view class="banner-content">
+          <view class="banner-title">AI 店务助手已就绪 🤖</view>
+          <view class="banner-sub">请在下方对话框直接发送：“收了一台 iPhone 13 成本 1800” 或 “卖出 iPhone 12 价格 2200” 即可快速开单！</view>
         </view>
       </view>
     </view>
