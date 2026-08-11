@@ -143,9 +143,14 @@ Page<IPageData, IPageCustom>({
       success: (res) => {
         if (res.confirm && res.content) {
           const staffName = res.content.trim();
+          if (!staffName) {
+            wx.showToast({ title: '姓名不能为空', icon: 'none' });
+            return;
+          }
           
           wx.showLoading({ title: '创建中...' });
-          // 调用后端：创建员工档案
+
+          // 调用后端：创建员工档案 (遵循 Bare Payload + RFC 7807 规范)
           request({
             url: '/api/v1/shop/staff/create',
             method: 'POST',
@@ -153,23 +158,25 @@ Page<IPageData, IPageCustom>({
               nickname: staffName,
               role: 'staff' // 默认员工角色
             }
-          }).then(() => {
-            wx.hideLoading();
-            wx.showToast({ title: '档案创建成功', icon: 'success' });
-            // 刷新列表（刷新后会自动触发 prepareInviteToken 准备新员工的 Token）
-            this.fetchStaffList();
-          }).catch((err) => {
-            wx.hideLoading();
-            
-            // 获取后端返回的错误信息（兼容各种层级的 err 结构）
-            const errorMsg = err?.data?.detail || err?.detail || '创建失败，请稍后再试';
-            
-            wx.showToast({
-              title: errorMsg,
-              icon: 'none',
-              duration: 2000
+          })
+            .then(() => {
+              wx.showToast({ title: '档案创建成功', icon: 'success' });
+              // 刷新列表（刷新后会自动触发 prepareInviteToken 准备新员工的 Token）
+              this.fetchStaffList();
+            })
+            .catch((err: any) => {
+              // 💡 符合 RFC 7807 标准：错误体字段固定为 err.detail 或 err.title
+              const errorMsg = err?.detail || err?.title || '创建失败，请稍后再试';
+              wx.hideLoading();
+              wx.showToast({
+                title: errorMsg,
+                icon: 'none',
+                duration: 2000
+              });
+            })
+            .finally(() => {
+
             });
-          });
         }
       }
     });

@@ -1,11 +1,6 @@
 // pages/index/index.ts
 import { request } from '../../utils/request';
 
-// 🌟 徹底擺脫舊版 TS 對於全域 API 及 String 方法的限制
-declare const JSON: any;
-declare const Array: any;
-declare const String: any;
-
 interface StockItem {
   id: number | string;
   model: string;
@@ -57,17 +52,17 @@ interface AgentApiResponse {
   parsedData?: ParsedDeviceData;
 }
 
-interface OverviewApiResponse {
-  code: number;
-  data: {
-    today_profit: number;
-    today_income: number;
-    today_expense: number;
-    in_stock_devices: number;
-  };
+// 1. 裸响应数据类型定义 (Bare Payload)
+interface DashboardOverviewData {
+  today_profit: number;
+  today_income: number;
+  today_expense: number;
+  in_stock_devices: number;
 }
 
+// 2. 页面 Data 接口 (补齐 userRole 解决 ts2769 报错)
 interface PageData {
+  userRole: string;
   navHeight: number;
   stats: ShopStats;
   showMenu: boolean;
@@ -76,6 +71,7 @@ interface PageData {
   messages: ChatMessage[];
 }
 
+// 3. 页面 CustomMethods 接口 (补齐 goToMy 解决自定义方法报错)
 interface PageCustomMethods {
   toggleMenu: () => void;
   onInput: (e: WechatMiniprogram.Input) => void;
@@ -84,6 +80,7 @@ interface PageCustomMethods {
   confirmSell: (e: WechatMiniprogram.CustomEvent) => void;
   fetchDashboardStats: () => void;
   checkUserShopStatus: () => void;
+  goToMy: () => void;
 }
 
 Page<PageData, PageCustomMethods>({
@@ -131,162 +128,175 @@ Page<PageData, PageCustomMethods>({
 
     this.checkUserShopStatus();
 
-    // 如果是店员，可以跳过财务看板接口调用，或展示简版数据
+    // 如果是管理员/经理，加载财务概览
     if (role === 'admin' || role === 'manager') {
-
       this.fetchDashboardStats();
     }
-    
   },
 
   checkUserShopStatus() {
-    request({ url: '/api/v1/shop/current', method: 'GET' }).then((res: any) => {
-      // 如果返回数据提示没有绑定店铺，强行引导去开店页
-      if (!res.data || !res.data.id) {
-        wx.redirectTo({
-          url: '/pages/shop-edit/index?type=create'
-        });
-      } else {
-        // 已有店铺，将 shop_id 写入缓存供全局 API 使用
-        wx.setStorageSync('current_shop_id', res.data.id);
-      }
-    });
+    request<{ id?: number | string }>({ url: '/api/v1/shop/current', method: 'GET' })
+      .then((resData) => {
+        // Bare Payload 模式下，resData 直接为店铺实体
+        if (!resData || !resData.id) {
+          wx.redirectTo({
+            url: '/pages/shop-edit/index?type=create'
+          });
+        } else {
+          // 已有店铺，将 shop_id 写入缓存供全局 API 使用
+          wx.setStorageSync('current_shop_id', resData.id);
+        }
+      })
+      .catch((err: any) => {
+        console.error('获取店铺状态失败:', err);
+      });
   },
 
   fetchDashboardStats() {
-    request({
+    request<DashboardOverviewData>({
       url: '/api/v1/dashboard/overview',
       method: 'GET'
-    }).then((res: any) => {
-      const resData = res as OverviewApiResponse;
-      if (resData && resData.data) {
-        const d = resData.data;
-        this.setData({
-          stats: {
-            profit: d.today_profit,
-            income: d.today_income,
-            expense: d.today_expense,
-            stockCount: d.in_stock_devices,
-          },
-        });
-      }
-    }).catch((err: any) => {
-      if (err?.status === 403) {
-        wx.showToast({ title: '无权查看财务概览', icon: 'none' });
-      }
-    });
+    })
+      .then((data) => {
+        if (data) {
+          this.setData({
+            stats: {
+              profit: data.today_profit,
+              income: data.today_income,
+              expense: data.today_expense,
+              stockCount: data.in_stock_devices,
+            },
+          });
+        }
+      })
+      .catch((err: any) => {
+        // 💡 匹配 RFC 7807 错误格式
+        if (err?.status === 403) {
+          wx.showToast({
+            title: err.detail || '无权查看财务概览',
+            icon: 'none'
+          });
+        } else if (err?.detail) {
+          wx.showToast({ title: err.detail, icon: 'none' });
+        }
+      });
   },
 
   toggleMenu() {
-    const selfData = this.data as any;
-    this.setData({ showMenu: !selfData.showMenu });
+    this.setData({ showMenu: !this.data.showMenu });
   },
 
   onInput(e: WechatMiniprogram.Input) {
     this.setData({ inputMsg: e.detail.value });
   },
 
-  /**
-   * 🌟 向 AI 发送对话指令（补全了参数类型注解 : any）
-   */
   sendToAgent() {
-    const selfData = this.data as any;
-    const rawInput = selfData.inputMsg || '';
-    const text = (rawInput as any).trim ? (rawInput as any).trim() : String(rawInput);
-
+    const rawInput = this.data.inputMsg || '';
+    const text = rawInput.trim();
+  
     if (!text) return;
-
+  
     const userMsg: ChatMessage = { role: 'user', content: text };
-    const currentMessages = selfData.messages || [];
+    const currentMessages = this.data.messages || [];
     const messagesWithUser = [...currentMessages, userMsg];
-    const userMsgLen = (messagesWithUser as any).length;
-
+  
     this.setData({
       messages: messagesWithUser,
       inputMsg: '',
-      lastMsgId: `msg-${userMsgLen - 1}`,
+      lastMsgId: `msg-${messagesWithUser.length - 1}`,
     });
-
+  
     wx.showLoading({
       title: 'AI 思考/處理中...',
       mask: true
     });
-
+  
+    // 🌟 1. 从本地缓存获取 currentShopId、role 和 sessionId
+    const currentShopId = wx.getStorageSync('shop_id') || wx.getStorageSync('current_shop_id') || 1;
+    const role = wx.getStorageSync('role') || 'staff';
+    const sessionId = wx.getStorageSync('session_id') || wx.getStorageSync('role') || `session_${Date.now()}`;
+  
     request<AgentApiResponse>({
       url: '/api/v1/shop/chat',
       method: 'POST',
-      data: { message: text }
-    }).then((resData: any) => {
-      let rawReply = resData.reply || '已收到指令';
-      let parsedData: ParsedDeviceData | null = resData.parsedData || null;
-
-      if (typeof rawReply === 'string') {
-        try {
-          const str = rawReply as any;
-          const cleanJsonStr = str.replace(/```json\s*|\s*```/g, '').trim();
-          if (cleanJsonStr.startsWith('{') && cleanJsonStr.endsWith('}')) {
-            const parsedJson = JSON.parse(cleanJsonStr);
-            if (parsedJson.reply) rawReply = parsedJson.reply;
-            if (parsedJson.parsedData) parsedData = parsedJson.parsedData;
-          }
-        } catch (e) {}
+      // 🌟 2. 在 Header 中透传 X-Shop-Id 和 X-User-Role 供后端 FastAPI 拦截解析
+      header: {
+        'X-Shop-Id': String(currentShopId),
+        'X-User-Role': role,
+      },
+      // 🌟 3. 在 Body 中额外携带 session_id
+      data: { 
+        message: text,
+        session_id: sessionId
       }
-
-      let reply = '';
-      if (Array.isArray(rawReply) && (rawReply as any).length > 0) {
-        reply = rawReply[0].text || rawReply[0].content || '已收到指令';
-      } else if (typeof rawReply === 'string') {
-        reply = rawReply;
-      } else if (typeof rawReply === 'object' && rawReply !== null) {
-        reply = (rawReply as any).text || (rawReply as any).content || JSON.stringify(rawReply);
-      } else {
-        reply = '已收到指令';
-      }
-
-      const assistantMsg: ChatMessage = { role: 'assistant', content: reply, parsedData };
-      const finalMessages = [...messagesWithUser, assistantMsg];
-      const finalLen = (finalMessages as any).length;
-
-      this.setData({
-        messages: finalMessages,
-        lastMsgId: `msg-${finalLen - 1}`,
+    })
+      .then((resData) => {
+        let rawReply = resData?.reply || '已收到指令';
+        let parsedData: ParsedDeviceData | null = resData?.parsedData || null;
+  
+        if (typeof rawReply === 'string') {
+          try {
+            const cleanJsonStr = rawReply.replace(/```json\s*|\s*```/g, '').trim();
+            if (cleanJsonStr.startsWith('{') && cleanJsonStr.endsWith('}')) {
+              const parsedJson = JSON.parse(cleanJsonStr);
+              if (parsedJson.reply) rawReply = parsedJson.reply;
+              if (parsedJson.parsedData) parsedData = parsedJson.parsedData;
+            }
+          } catch (e) {}
+        }
+  
+        let reply = '';
+        if (Array.isArray(rawReply) && rawReply.length > 0) {
+          reply = rawReply[0].text || rawReply[0].content || '已收到指令';
+        } else if (typeof rawReply === 'string') {
+          reply = rawReply;
+        } else if (typeof rawReply === 'object' && rawReply !== null) {
+          reply = (rawReply as any).text || (rawReply as any).content || JSON.stringify(rawReply);
+        } else {
+          reply = '已收到指令';
+        }
+  
+        const assistantMsg: ChatMessage = { role: 'assistant', content: reply, parsedData };
+        const finalMessages = [...messagesWithUser, assistantMsg];
+  
+        this.setData({
+          messages: finalMessages,
+          lastMsgId: `msg-${finalMessages.length - 1}`,
+        });
+  
+        // 如果是管理员/经理，加载财务概览
+        if (role === 'admin' || role === 'manager') {
+          this.fetchDashboardStats();
+        }
+      })
+      .catch(() => {
+        const mockMsg: ChatMessage = {
+          role: 'assistant',
+          content: '【調試提示】Python 後端未連接。若接通，系統將自動識別並生成卡片。',
+          parsedData: { type: 'in', action: 'in', model: 'iPhone 13 (演示數據)', cost: 1800, notes: '自動提取測試' },
+        };
+  
+        const finalMessages = [...messagesWithUser, mockMsg];
+  
+        this.setData({
+          messages: finalMessages,
+          lastMsgId: `msg-${finalMessages.length - 1}`,
+        });
+      })
+      .finally(() => {
+        wx.hideLoading();
       });
-
-      this.fetchDashboardStats();
-    }).catch(() => {
-      const mockMsg: ChatMessage = {
-        role: 'assistant',
-        content: '【調試提示】Python 後端未連接。若接通，系統將自動識別並生成卡片。',
-        parsedData: { type: 'in', action: 'in', model: 'iPhone 13 (演示數據)', cost: 1800, notes: '自動提取測試' },
-      };
-
-      const finalMessages = [...messagesWithUser, mockMsg];
-      const finalLen = (finalMessages as any).length;
-
-      this.setData({
-        messages: finalMessages,
-        lastMsgId: `msg-${finalLen - 1}`,
-      });
-    }).finally(() => {
-      wx.hideLoading();
-    });
   },
 
-  /**
-   * 跳转至“我的”页面
-   */
   goToMy(): void {
     wx.navigateTo({
-      url: '/pages/my/index', // 👈 你的“我的”页面路径
+      url: '/pages/my/index',
       fail: (err: WechatMiniprogram.GeneralCallbackResult) => {
         console.error('跳转到“我的”页面失败：', err);
       }
     });
   },
 
-  /**
-   * 🌟 确认入库卡片（补全了参数类型注解 : any）
-   */
   confirmAdd(e: WechatMiniprogram.CustomEvent) {
     const { info, index } = e.currentTarget.dataset as { info: ParsedDeviceData; index: number };
     if (typeof index === 'number' && this.data.messages[index]?.isConfirmed) {
@@ -302,23 +312,26 @@ Page<PageData, PageCustomMethods>({
           cost: info.cost || info.cost_price,
           notes: info.notes || ''
         }
-      }).then(() => {
-        wx.showToast({ title: `成功入庫: ${info.model || '設備'}`, icon: 'success' });
-        if (typeof index === 'number') {
-          this.setData({
-            [`messages[${index}].isConfirmed`]: true
-          });
-        }
-        this.fetchDashboardStats();
-      }).catch((err: any) => {
-        wx.showToast({ title: err?.detail || '入庫失敗，請重試', icon: 'none' });
-      });
+      })
+        .then(() => {
+          wx.showToast({ title: `成功入庫: ${info.model || '設備'}`, icon: 'success' });
+          if (typeof index === 'number') {
+            this.setData({
+              [`messages[${index}].isConfirmed`]: true
+            });
+          }
+          const role = wx.getStorageSync('role') || 'staff';
+          // 如果是管理员/经理，加载财务概览
+          if (role === 'admin' || role === 'manager') {
+            this.fetchDashboardStats();
+          }
+        })
+        .catch((err: any) => {
+          wx.showToast({ title: err?.detail || '入庫失敗，請重試', icon: 'none' });
+        });
     }
   },
 
-  /**
-   * 🌟 确认出售卡片（补全了参数类型注解 : any）
-   */
   confirmSell(e: WechatMiniprogram.CustomEvent) {
     const { info, index } = e.currentTarget.dataset as { info: ParsedDeviceData; index: number };
     if (typeof index === 'number' && this.data.messages[index]?.isConfirmed) {
@@ -334,17 +347,23 @@ Page<PageData, PageCustomMethods>({
           price: info.price || info.sell_price || 0,
           notes: info.notes || ''
         }
-      }).then(() => {
-        wx.showToast({ title: `成功出售: ${info.model || '設備'}`, icon: 'success' });
-        if (typeof index === 'number') {
-          this.setData({
-            [`messages[${index}].isConfirmed`]: true
-          });
-        }
-        this.fetchDashboardStats();
-      }).catch((err: any) => {
-        wx.showToast({ title: err?.detail || '出售失敗', icon: 'none' });
-      });
+      })
+        .then(() => {
+          wx.showToast({ title: `成功出售: ${info.model || '設備'}`, icon: 'success' });
+          if (typeof index === 'number') {
+            this.setData({
+              [`messages[${index}].isConfirmed`]: true
+            });
+          }
+          const role = wx.getStorageSync('role') || 'staff';
+          // 如果是管理员/经理，加载财务概览
+          if (role === 'admin' || role === 'manager') {
+            this.fetchDashboardStats();
+          }
+        })
+        .catch((err: any) => {
+          wx.showToast({ title: err?.detail || '出售失敗', icon: 'none' });
+        });
     }
   },
 });

@@ -1,62 +1,85 @@
 // src/utils/request.ts
 import { BASE_URL } from './config';
 
-declare const Promise: any; // 🌟 告訴 TS：全域有 Promise 這個東西，別再報錯了！
-
-// 定義通用的 API 回傳結構 (根據你 FastAPI 的 Response 修改)
-export interface ApiResponse<T = any> {
-  code: number;
-  data: T;
-  message: string;
+// 1. RFC 7807 标准错误对象定义
+export interface RFC7807Error {
+  type?: string;
+  title?: string;
+  status: number;
+  detail?: string;
+  instance?: string;
+  invalid_params?: Array<{ loc: string[]; msg: string; type: string }>;
 }
 
-// 請求參數介面
-interface RequestOptions {
+// 2. 局部定义 wx.request 参数中 header 的类型
+export type RequestHeader = { [key: string]: any };
+
+// 3. 规范请求参数接口
+export interface RequestOptions {
   url: string;
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   data?: any;
-  header?: { [key: string]: any }; // 🌟 用原生索引簽名替代 Record
+  header?: RequestHeader;
 }
 
 /**
- * 泛型 Request 封裝
+ * 泛型 HTTP Request 封装 (基于 Bare Payload & RFC 7807 规范)
  */
-export const request = <T = any>(options: RequestOptions): any => {
-  return new (Promise as any)((resolve: (val: T) => void, reject: (reason?: any) => void) => {
-    
-    // 🌟 1. 自動從本地快取讀取 Token
+export const request = <T = any>(options: RequestOptions): Promise<T> => {
+  return new Promise<T>((resolve, reject) => {
+    // 🌟 1. 自动读取本地存储中的 Token 与当前店铺 ID
     const token = wx.getStorageSync('token');
+    const currentShopId = wx.getStorageSync('current_shop_id');
 
-    // 🌟 2. 構建 Header，確保預設帶上 Authorization: Bearer <token>
-    const authHeader: { [key: string]: any } = {
+    // 🌟 2. 构建基础 Header
+    const authHeader: RequestHeader = {
       'content-type': 'application/json'
     };
 
     if (token) {
-      // 注意：Bearer 和 Token 之間必须有一个空格！
       authHeader['Authorization'] = `Bearer ${token}`;
     }
 
+    if (currentShopId) {
+      authHeader['X-Shop-Id'] = currentShopId;
+    }
+
+    // 🌟 3. 发送微信网络请求
     wx.request({
-      url: `${BASE_URL}${options.url}`, // 自動拼接地址
+      url: `${BASE_URL}${options.url}`,
       method: options.method || 'GET',
       data: options.data,
-      // 🌟 3. 將內建 Token Header 與傳入的自訂 Header 合併
       header: {
         ...authHeader,
         ...options.header,
       },
       success: (res) => {
+        // A. 2xx 成功响应：遵守 Bare Payload 规范，res.data 即为最终实体数据
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data as T);
-        } else if (res.statusCode === 401) {
-          // 💡 4. 如果遇到 401，說明 Token 無效或已過期，自動清除並導向登入頁
-          console.warn('[401 Unauthorized] Token 已失效，自動跳轉至登入頁');
+          return;
+        }
+
+        // B. 解析后端符合 RFC 7807 规范的错误体
+        const resBody = (res.data || {}) as Record<string, any>;
+        const rfcError: RFC7807Error = {
+          status: res.statusCode,
+          type: resBody.type || 'about:blank',
+          title: resBody.title || 'HTTP_ERROR',
+          detail: resBody.detail || '系统响应异常',
+          instance: resBody.instance || options.url,
+          invalid_params: resBody.invalid_params,
+        };
+
+        // C. 401 身份过期拦截处理
+        if (res.statusCode === 401) {
+          console.warn('[401 Unauthorized] Token 已失效，自动清理并跳转登录页');
           wx.removeStorageSync('token');
           wx.removeStorageSync('userInfo');
-          
+          wx.removeStorageSync('current_shop_id');
+
           wx.showToast({
-            title: '登入已過期，請重新登入',
+            title: rfcError.detail || '登录状态已失效，请重新登录',
             icon: 'none',
             duration: 2000
           });
@@ -67,19 +90,30 @@ export const request = <T = any>(options: RequestOptions): any => {
             });
           }, 1000);
 
-          reject(res.data);
-        } else {
-          console.error(`[API Error ${res.statusCode}]:`, res.data);
-          reject(res.data);
+          reject(rfcError);
+          return;
         }
+
+        // D. 其他 4xx / 5xx 错误（如 403, 422, 500 等）
+        console.error(`[API Error ${res.statusCode}]:`, rfcError);
+        reject(rfcError);
       },
       fail: (err) => {
+        // 网络层/断网错误处理
         console.error('[Network Error]:', err);
+        const networkError: RFC7807Error = {
+          status: 500,
+          title: 'NETWORK_ERROR',
+          detail: err.errMsg || '网络连接失败，请检查网络设置',
+          instance: options.url,
+        };
+
         wx.showToast({
-          title: '網路連接失敗',
+          title: '网络连接失败',
           icon: 'none'
         });
-        reject(err);
+
+        reject(networkError);
       },
     });
   });

@@ -32,6 +32,19 @@ interface IPageCustom {
   fetchCurrentShopInfo: () => void; // 修复中文全角冒号
 }
 
+// 1. 定义后端返回的店铺裸数据结构 (Bare Payload)
+interface ShopInfo {
+  id?: number | string;
+  name?: string;
+  logo?: string;
+  contact_name?: string;
+  contact_phone?: string;
+  province?: string;
+  city?: string;
+  district?: string;
+  address_detail?: string;
+}
+
 Page<IPageData, IPageCustom>({
   data: {
     statusBarHeight: 20,
@@ -72,25 +85,42 @@ Page<IPageData, IPageCustom>({
     });
   },
 
-  // 获取当前店铺数据填入表单
+
+  // 2. 页面方法重构
   fetchCurrentShopInfo(): void {
     wx.showLoading({ title: '加载中...' });
-    request({ url: '/api/v1/shop/current', method: 'GET' })
-      .then((res: any) => {
-        wx.hideLoading();
-        if (res.code === 200 && res.data) {
-          const d = res.data;
+
+    request<ShopInfo>({ 
+      url: '/api/v1/shop/current', 
+      method: 'GET' 
+    })
+      .then((shopData) => {
+        // 💡 裸响应模式：shopData 即为店铺数据实体对象本身
+        if (shopData) {
           this.setData({
-            'formData.shopName': d.name || '',
-            'formData.logoUrl': d.logo || '',
-            'formData.contactPerson': d.contact_name || '',
-            'formData.contactPhone': d.contact_phone || '', // 修正为驼峰字段 contactPhone
-            'formData.region': [d.province || '', d.city || '', d.district || ''],
-            'formData.addressDetail': d.address_detail || ''
+            'formData.shopName': shopData.name || '',
+            'formData.logoUrl': shopData.logo || '',
+            'formData.contactPerson': shopData.contact_name || '',
+            'formData.contactPhone': shopData.contact_phone || '',
+            'formData.region': [
+              shopData.province || '', 
+              shopData.city || '', 
+              shopData.district || ''
+            ],
+            'formData.addressDetail': shopData.address_detail || ''
           });
         }
       })
-      .catch(() => wx.hideLoading());
+      .catch((err: any) => {
+        // 💡 匹配 RFC 7807 错误格式
+        wx.showToast({
+          title: err?.detail || '获取店铺信息失败',
+          icon: 'none'
+        });
+      })
+      .finally(() => {
+        wx.hideLoading();
+      });
   },
 
   goBack(): void {
@@ -178,7 +208,7 @@ Page<IPageData, IPageCustom>({
     }).catch((err: any) => {
       wx.hideLoading();
       wx.showToast({
-        title: err.data?.detail || '操作失败，请重试',
+        title: err.detail || '操作失败，请重试',
         icon: 'none'
       });
     });
