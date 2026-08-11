@@ -83,6 +83,7 @@ interface PageCustomMethods {
   confirmAdd: (e: WechatMiniprogram.CustomEvent) => void;
   confirmSell: (e: WechatMiniprogram.CustomEvent) => void;
   fetchDashboardStats: () => void;
+  checkUserShopStatus: () => void;
 }
 
 Page<PageData, PageCustomMethods>({
@@ -128,10 +129,28 @@ Page<PageData, PageCustomMethods>({
     const role = wx.getStorageSync('role') || 'staff';
     this.setData({ userRole: role });
 
+    this.checkUserShopStatus();
+
     // 如果是店员，可以跳过财务看板接口调用，或展示简版数据
     if (role === 'admin' || role === 'manager') {
+
       this.fetchDashboardStats();
     }
+    
+  },
+
+  checkUserShopStatus() {
+    request({ url: '/api/v1/shop/current', method: 'GET' }).then((res: any) => {
+      // 如果返回数据提示没有绑定店铺，强行引导去开店页
+      if (!res.data || !res.data.id) {
+        wx.redirectTo({
+          url: '/pages/shop-edit/index?type=create'
+        });
+      } else {
+        // 已有店铺，将 shop_id 写入缓存供全局 API 使用
+        wx.setStorageSync('current_shop_id', res.data.id);
+      }
+    });
   },
 
   fetchDashboardStats() {
@@ -250,6 +269,18 @@ Page<PageData, PageCustomMethods>({
       });
     }).finally(() => {
       wx.hideLoading();
+    });
+  },
+
+  /**
+   * 跳转至“我的”页面
+   */
+  goToMy(): void {
+    wx.navigateTo({
+      url: '/pages/my/index', // 👈 你的“我的”页面路径
+      fail: (err: WechatMiniprogram.GeneralCallbackResult) => {
+        console.error('跳转到“我的”页面失败：', err);
+      }
     });
   },
 

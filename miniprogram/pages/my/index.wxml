@@ -1,0 +1,53 @@
+<!-- pages/my/index.wxml -->
+<view class="container">
+  <!-- 1. 自定义导航栏区域 -->
+  <view class="custom-nav-bar" style="height: {{statusBarHeight + navBarHeight}}px;">
+    <!-- 返回按钮：严格与右侧胶囊对齐 -->
+    <view 
+      class="back-btn" 
+      bindtap="goBack"
+      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
+    >
+      <text class="back-icon">‹</text>
+    </view>
+
+    <!-- 标题：垂直居中 -->
+    <view 
+      class="nav-title" 
+      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
+    >
+      我的
+    </view>
+  </view>
+
+  <!-- 2. 顶部 Header 蓝底卡片 -->
+  <view class="header-card" bindtap="goToProfile">
+    <view class="avatar-box">
+      <image class="avatar-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='%23ffffff'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-3.8-1.04-4.83-2.61.03-.99 2.69-1.53 4.83-1.53s4.8.54 4.83 1.53C15.8 18.96 14.03 20 12 20z'/></svg>" mode="aspectFit" />
+    </view>
+    <view class="user-info">
+      <view class="title-row">
+        <text class="role-name">超级管理员</text>
+        <text class="arrow-right-white">›</text>
+      </view>
+      <view class="sub-row">
+        <text class="shop-tip">演示(点我可切换店铺)</text>
+        <text class="switch-icon">⇄</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 3. 店铺管理卡片 -->
+  <view class="section-card">
+    <view class="menu-row" bindtap="goToShopManagement">
+      <view class="row-left">
+        <text class="row-icon">🏪</text>
+        <view class="row-text-group">
+          <text class="row-title">店铺管理</text>
+          <text class="row-desc">店铺信息 | 员工管理</text>
+        </view>
+      </view>
+      <text class="arrow-right">›</text>
+    </view>
+  </view>
+</view>

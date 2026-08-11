@@ -1,0 +1,16 @@
+<!-- pages/invite-accept/index.wxml -->
+<view class="container">
+  <view class="invite-card">
+    <image class="avatar" src="/assets/logo.png"></image>
+    <text class="title">店铺员工邀请</text>
+    <text class="desc">管理员邀请你加入店铺团队，点击下方按钮完成绑定。</text>
+    
+    <button 
+      type="primary" 
+      loading="{{loading}}" 
+      bindtap="handleAccept"
+      class="btn-accept">
+      接受邀请并绑定
+    </button>
+  </view>
+</view>

@@ -1,0 +1,163 @@
+page {
+  background-color: #f7f7f7;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.container {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  /* 确保不会在垂直方向居中 */
+  display: block !important; 
+}
+
+/* ================= 1. 自定义导航栏 ================= */
+.custom-nav-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  z-index: 999;
+}
+
+.back-btn {
+  position: absolute;
+  left: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 20rpx;
+  z-index: 1000;
+}
+
+.back-icon {
+  font-size: 52rpx;
+  color: #333333;
+  font-weight: 300;
+}
+
+.nav-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: auto;
+  text-align: center;
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333333;
+  pointer-events: none;
+}
+
+/* ================= 2. 页面主体内容（重置外边距，贴紧顶部） ================= */
+.page-content {
+  width: 100%;
+  padding-left: 24rpx;
+  padding-right: 24rpx;
+  padding-bottom: 200rpx;
+  box-sizing: border-box;
+  margin: 0 !important; /* 清空可能存在的外边距 */
+  display: block !important;
+}
+
+.staff-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin: 0 !important; /* 清空可能存在的外边距 */
+  padding: 0 !important;
+}
+
+.staff-item {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 32rpx 28rpx;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  box-sizing: border-box;
+}
+
+.staff-item:active {
+  background-color: #f9f9f9;
+}
+
+.staff-info {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.staff-name {
+  font-size: 30rpx;
+  color: #333333;
+}
+
+.tag-creator {
+  font-size: 22rpx;
+  color: #999999;
+  background-color: #f2f2f2;
+  padding: 4rpx 12rpx;
+  border-radius: 6rpx;
+}
+
+.staff-right {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.arrow {
+  font-size: 32rpx;
+  color: #cccccc;
+  line-height: 1;
+}
+
+/* ================= 3. 底部操作栏 ================= */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  padding: 20rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 20rpx;
+  box-sizing: border-box;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.04);
+  z-index: 99;
+}
+
+.btn-invite {
+  width: 200rpx !important;
+  height: 88rpx;
+  background-color: #ffffff;
+  color: #333333;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+}
+
+.btn-add {
+  flex: 1;
+  height: 88rpx;
+  background-color: #2979ff;
+  color: #ffffff;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+}

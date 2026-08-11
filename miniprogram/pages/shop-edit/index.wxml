@@ -1,0 +1,68 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav-bar">
+    <view class="back-btn" bindtap="goBack" style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;">
+      <text class="back-icon">‹</text>
+    </view>
+    <view class="nav-title" style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;">
+      店铺信息编辑
+    </view>
+  </view>
+
+  <!-- 主体内容 -->
+  <view class="page-content" >
+    
+    <!-- 模块1：店铺LOGO -->
+    <view class="form-card">
+      <view class="form-row logo-row" bindtap="onChooseLogo">
+        <text class="row-label">店铺LOGO</text>
+        <view class="logo-wrapper">
+          <view class="css-shop-icon"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 模块2：基本信息 -->
+    <view class="form-card">
+      <view class="form-row">
+        <view class="row-label">
+          <text class="required">*</text>店铺名称
+        </view>
+        <input class="row-input" placeholder="演示 (点我可切换店铺)" value="{{formData.shopName}}" bindinput="onInputShopName" />
+      </view>
+
+      <view class="form-row">
+        <text class="row-label">联系人</text>
+        <input class="row-input" placeholder="请输入" value="{{formData.contactPerson}}" bindinput="onInputContactPerson" />
+      </view>
+
+      <view class="form-row">
+        <text class="row-label">联系电话</text>
+        <input class="row-input" type="number" placeholder="请输入" value="{{formData.contactPhone}}" bindinput="onInputContactPhone" />
+      </view>
+    </view>
+
+    <!-- 模块3：位置信息 -->
+    <view class="form-card">
+      <picker mode="region" bindchange="onRegionChange" value="{{formData.region}}">
+        <view class="form-row">
+          <text class="row-label">地区</text>
+          <view class="picker-value {{formData.region.length ? '' : 'placeholder'}}">
+            {{formData.region.length ? formData.region[0] + ' ' + formData.region[1] + ' ' + formData.region[2] : '请选择'}}
+          </view>
+        </view>
+      </picker>
+
+      <view class="form-row">
+        <text class="row-label">详细地址</text>
+        <input class="row-input" placeholder="请输入" value="{{formData.addressDetail}}" bindinput="onInputAddress" />
+      </view>
+    </view>
+
+  </view>
+
+  <!-- 底部保存按钮 -->
+  <view class="bottom-bar">
+    <button class="btn-save" bindtap="onSave">保存</button>
+  </view>
+</view>

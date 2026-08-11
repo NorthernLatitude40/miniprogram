@@ -1,0 +1,52 @@
+<view class="container">
+  <!-- 1. 自定义导航栏区域 -->
+  <view class="custom-nav-bar" style="height: {{statusBarHeight + navBarHeight}}px;">
+    <view 
+      class="back-btn" 
+      bindtap="goBack"
+      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
+    >
+      <text class="back-icon">‹</text>
+    </view>
+    <view 
+      class="nav-title" 
+      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
+    >
+      店铺管理
+    </view>
+  </view>
+
+  <!-- 2. 主体区域 -->
+  <view class="page-content" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
+    
+    <!-- 店铺图标与名字 -->
+    <view class="shop-header" bindtap="onSwitchShop">
+      <view class="icon-wrapper">
+        <view class="css-shop-icon"></view>
+      </view>
+      <view class="shop-name">{{shopInfo.shopName}}</view>
+    </view>
+
+    <!-- 功能菜单列表 -->
+    <view class="menu-list">
+      <!-- 店铺信息 -->
+      <view class="menu-item" bindtap="onTapShopInfo">
+        <text class="item-title">店铺信息</text>
+        <view class="item-right">
+          <text class="item-desc">修改</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 员工和权限 -->
+      <view class="menu-item" bindtap="onTapStaffPermission">
+        <text class="item-title">员工和权限</text>
+        <view class="item-right">
+          <text class="item-desc">已设置{{shopInfo.staffCount}}个</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+  </view>
+</view>

@@ -254,9 +254,10 @@
             <text class="menu-icon">🔧</text>
             <text class="menu-text">维修开单</text>
           </view>
-          <view class="menu-item">
-            <text class="menu-icon">🛠️</text>
-            <text class="menu-text">配件库存</text>
+          <view class="menu-item" bindtap="goToMy">
+            <!-- 替换为用户/个人图标符号 -->
+            <text class="menu-icon">👤</text> 
+            <text class="menu-text">我的</text>
           </view>
         </view>
       </view>

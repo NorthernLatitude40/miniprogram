@@ -1,0 +1,161 @@
+page {
+  background-color: #f7f7f7;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.container {
+  width: 100vw;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ================= 自定义导航栏 ================= */
+.custom-nav-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  z-index: 999;
+}
+
+.back-btn {
+  position: absolute;
+  left: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 20rpx;
+  z-index: 1000;
+}
+
+.back-icon {
+  font-size: 52rpx;
+  color: #333333;
+  font-weight: 300;
+}
+
+.nav-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: auto;
+  text-align: center;
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333333;
+  pointer-events: none;
+}
+
+/* ================= 页面主体内容 ================= */
+.page-content {
+  padding: 0 32rpx;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* 顶部店铺切换 */
+.shop-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40rpx;
+  margin-bottom: 50rpx;
+}
+
+.icon-wrapper {
+  width: 140rpx;
+  height: 140rpx;
+  background-color: #f0f5ff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+/* CSS 纯代码绘制店铺小图标，不依赖外部图片 */
+.css-shop-icon {
+  width: 60rpx;
+  height: 45rpx;
+  background-color: #2979ff;
+  border-radius: 6rpx;
+  position: relative;
+}
+
+.css-shop-icon::before {
+  content: '';
+  position: absolute;
+  top: -12rpx;
+  left: -6rpx;
+  width: 72rpx;
+  height: 16rpx;
+  background-color: #448aff;
+  border-radius: 6rpx;
+}
+
+.css-shop-icon::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24rpx;
+  height: 24rpx;
+  background-color: #ffffff;
+  border-radius: 4rpx 4rpx 0 0;
+}
+
+.shop-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+/* 菜单列表区 - 解决文字挤在一起的关键 */
+.menu-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  box-sizing: border-box;
+}
+
+.menu-item {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 36rpx 32rpx;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important; /* 两端对齐核心 */
+  align-items: center !important;
+  box-sizing: border-box;
+}
+
+.menu-item:active {
+  background-color: #f9f9f9;
+}
+
+.item-title {
+  font-size: 30rpx;
+  color: #333333;
+}
+
+.item-right {
+  display: flex;
+  align-items: center;
+}
+
+.item-desc {
+  font-size: 28rpx;
+  color: #888888;
+  margin-right: 8rpx;
+}
+
+.arrow {
+  font-size: 32rpx;
+  color: #cccccc;
+  line-height: 1;
+}

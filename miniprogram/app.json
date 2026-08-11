@@ -1,10 +1,14 @@
 {
   "pages": [
-
     "pages/index/index",
     "pages/logs/logs",
-    "pages/login/login"
-   
+    "pages/login/login",
+    "pages/my/index",
+    "pages/profile/index",
+    "pages/shop/index",
+    "pages/staff/index",
+    "pages/shop-edit/index",
+    "pages/invite-accept/index"
   ],
   "networkTimeout": {
     "request": 120000,

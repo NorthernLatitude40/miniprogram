@@ -1,0 +1,54 @@
+<view class="container">
+  <!-- 1. 自定义顶部导航栏 (含返回键) -->
+  <view class="custom-nav-bar" style="height: {{statusBarHeight + navBarHeight}}px;">
+    <view 
+      class="back-btn" 
+      bindtap="goBack"
+      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
+    >
+      <text class="back-icon">‹</text>
+    </view>
+    <view 
+      class="nav-title" 
+      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
+    >
+      个人信息
+    </view>
+  </view>
+
+  <!-- 2. 信息列表卡片 -->
+  <view class="info-card">
+    <view class="info-item">
+      <text class="label">头像</text>
+      <view class="avatar-box">
+        <image class="avatar-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='%231565c0'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-3.8-1.04-4.83-2.61.03-.99 2.69-1.53 4.83-1.53s4.8.54 4.83 1.53C15.8 18.96 14.03 20 12 20z'/></svg>" mode="aspectFit" />
+      </view>
+    </view>
+
+    <view class="divider"></view>
+
+    <view class="info-item">
+      <text class="label">账号角色</text>
+      <text class="value">{{userInfo.roleName}}</text>
+    </view>
+
+    <view class="divider"></view>
+
+    <view class="info-item" bindtap="handleEditPhone">
+      <text class="label">手机号码</text>
+      <text class="value">{{userInfo.phone}}</text>
+    </view>
+
+    <view class="divider"></view>
+
+    <view class="info-item">
+      <text class="label">绑定店铺</text>
+      <text class="value">{{userInfo.shopName}}</text>
+    </view>
+  </view>
+
+  <!-- 3. 退出登录按钮 -->
+  <view class="logout-btn" bindtap="handleLogout">
+    退出登录
+  </view>
+</view>
