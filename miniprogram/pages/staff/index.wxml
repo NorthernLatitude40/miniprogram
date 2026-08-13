@@ -9,18 +9,42 @@
     </view>
   </view>
 
-  <!-- 页面主体内容：直接在导航栏下方 10px 处放卡片 -->
+  <!-- 页面主体内容 -->
   <view class="page-content">
     <view class="staff-list">
       <block wx:for="{{staffList}}" wx:key="id">
         <view class="staff-item" bindtap="onTapStaff" data-item="{{item}}">
+          
+          <!-- 左侧：员工信息 -->
           <view class="staff-info">
             <text class="staff-name">{{item.name}}</text>
+            
+            <!-- 兼容 status、isActive 和 is_active 多种判断方式 -->
+            <text class="staff-status {{ (item.status === 0 || item.isActive === false || item.is_active === false) ? 'unbound' : '' }}">
+              {{ (item.status === 0 || item.isActive === false || item.is_active === false) ? '待认领' : (item.roleName || '员工') }}
+            </text>
           </view>
+          
+          <!-- 右侧：标识或操作按钮 -->
           <view class="staff-right">
             <text class="tag-creator" wx:if="{{item.isCreator}}">创建人</text>
-            <text class="arrow">›</text>
+            
+            <!-- 🌟 核心修改点：改为将 item.invite_token 绑定在 data-token 属性上 -->
+            <button 
+              wx:if="{{item.status === 0 || item.isActive === false || item.is_active === false}}" 
+              class="btn-item-invite" 
+              open-type="share" 
+              data-token="{{item.invite_token}}" 
+              data-staff-name="{{item.name}}"
+              catchtap="preventBubble"
+            >
+              邀请绑定
+            </button>
+            
+            <!-- 已激活/已认领状态显示右箭头 -->
+            <text wx:else class="arrow">›</text>
           </view>
+
         </view>
       </block>
     </view>
@@ -28,7 +52,8 @@
 
   <!-- 底部固定按钮组 -->
   <view class="bottom-bar">
-    <button class="btn-invite" open-type="share">邀请</button>
+    <!-- 通用邀请按钮 -->
+    <button class="btn-invite" open-type="share" data-type="general">店铺通用邀请</button>
     <button class="btn-add" bindtap="onAddStaff">+ 新增员工信息</button>
   </view>
 </view>

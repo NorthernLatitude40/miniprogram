@@ -401,3 +401,82 @@ button[disabled].confirm-btn {
   align-items: center;            /* 垂直居中对齐 */
   margin-bottom: 20rpx;           /* 保持与下方内容的间距 */
 }
+
+
+/* 警告标签 */
+.warn-badge {
+  font-size: 20rpx;
+  background-color: #fff2e8;
+  color: #ff4d4f;
+  border: 1rpx solid #ffbb96;
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  margin-left: auto;
+}
+
+/* 型号选择器行 */
+.model-select-row {
+  display: flex;
+  align-items: center;
+}
+
+.pronoun-picker-wrap {
+  flex: 1;
+}
+
+/* 下拉选择触发框 */
+.picker-trigger {
+  font-size: 24rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 未选择状态（红色提醒） */
+.picker-trigger.unselected {
+  background-color: #fff1f0;
+  border: 1rpx dashed #ff4d4f;
+  color: #cf1322;
+  font-weight: bold;
+}
+
+/* 已选择状态（绿色状态） */
+.picker-trigger.selected {
+  background-color: #f6ffed;
+  border: 1rpx solid #b7eb8f;
+  color: #389e0d;
+}
+
+.arrow-down {
+  font-size: 18rpx;
+  margin-left: 10rpx;
+  color: #8c8c8c;
+}
+
+/* 禁用按钮的追加样式 */
+.btn-disabled {
+  background-color: #d9d9d9 !important;
+  color: #8c8c8c !important;
+  border: none !important;
+}
+
+/* 专属设备 ID 徽章样式 */
+.device-id-badge {
+  display: inline-block;
+  background-color: #e6f7ff;
+  color: #1890ff;
+  font-weight: bold;
+  font-size: 24rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 6rpx;
+  border: 1rpx solid #91d5ff;
+  font-family: monospace; /* 数字更加工整 */
+}
+
+/* 标签对齐 */
+.item-label {
+  color: #666666;
+  font-size: 28rpx;
+}

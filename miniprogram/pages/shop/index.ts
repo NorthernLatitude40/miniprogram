@@ -31,7 +31,7 @@ Page<IPageData, IPageCustom>({
     // 蓝色小店铺 SVG 图标
     defaultShopIcon: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231976d2'><path d='M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z'/></svg>",
     shopInfo: {
-      shopName: '演示(点我可切换店铺)',
+      shopName: '演示',
       staffCount: 1
     }
   },
@@ -62,7 +62,7 @@ Page<IPageData, IPageCustom>({
       const d = res?.data || res;
       if (d) {
         this.setData({
-          'shopInfo.shopName': d.name ? `${d.name}(点我可切换店铺)` : '演示(点我可切换店铺)',
+          'shopInfo.shopName': d.name ? `${d.name}` : '演示',
           'shopInfo.staffCount': d.staff_count ?? d.staffCount ?? 1
         });
       }

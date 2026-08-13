@@ -9,6 +9,9 @@ interface StaffItem {
   roleName?: string;
   phone?: string;
   isActive?: boolean;
+  is_active?: boolean;
+  status?: number; // 0: 待认领, 1: 正常
+  invite_token?: string; // 🌟 接收后端返回的加密 Token
 }
 
 interface IPageData {
@@ -18,17 +21,14 @@ interface IPageData {
   menuHeight: number;
   staffList: StaffItem[];
   shopId: string;
-  // 用于分享的临时凭证与名字
-  shareToken: string;
-  shareName: string;
 }
 
 interface IPageCustom {
   fetchStaffList: () => void;
-  prepareInviteToken: (staffList: any[]) => void;
   goBack: () => void;
   onTapStaff: (e: WechatMiniprogram.TouchEvent) => void;
   onAddStaff: () => void;
+  preventBubble: () => void;
   onShareAppMessage: (opts?: WechatMiniprogram.Page.IShareAppMessageOption) => WechatMiniprogram.Page.ICustomShareContent;
 }
 
@@ -39,9 +39,7 @@ Page<IPageData, IPageCustom>({
     menuTop: 40,
     menuHeight: 32,
     staffList: [],
-    shopId: '',
-    shareToken: '',
-    shareName: ''
+    shopId: ''
   },
 
   onLoad(): void {
@@ -76,56 +74,31 @@ Page<IPageData, IPageCustom>({
       url: `/api/v1/shop/staff/list`,
       method: 'GET',
       data: { shopId: this.data.shopId }
-    }).then((res: any) => {
-      wx.hideLoading();
-      const list = res?.data || res || [];
-      this.setData({ staffList: list });
-
-      // 🌟 核心：列表加载完后，静默预生成“未激活员工”的 Token！
-      this.prepareInviteToken(list);
-    }).catch((err: any) => {
-      wx.hideLoading();
-      console.error('获取员工列表失败:', err);
-      // 测试 Mock 降级
-      this.setData({
-        staffList: [
-          { id: '1', name: '超级管理员', isCreator: true, roleName: '创建人' }
-        ]
+    })
+      .then((res: any) => {
+        wx.hideLoading();
+        const list = res?.data || res || [];
+        this.setData({ staffList: list });
+      })
+      .catch((err: any) => {
+        wx.hideLoading();
+        console.error('获取员工列表失败:', err);
+        // 测试 Mock 降级
+        this.setData({
+          staffList: [
+            { id: '101', name: '超级管理员', isCreator: true, roleName: '创建人', isActive: true },
+            { id: '102', name: '海德薇', isCreator: false, roleName: '员工', isActive: false, invite_token: 'mock_token_102' }
+          ]
+        });
       });
-    });
-  },
-
-  // 🌟 提前准备 Token 的私有函数（用户点“邀请”按钮前就已经准备好）
-  prepareInviteToken(staffList: any[]): void {
-    // 兼容后端返回的 is_active 或 isActive 字段
-    const pendingStaff = staffList.find((item: any) => item.is_active === false || item.isActive === false);
-    if (!pendingStaff) {
-      // 如果没有待激活的员工，清空旧 token
-      this.setData({ shareToken: '', shareName: '' });
-      return;
-    }
-
-    request({
-      url: '/api/v1/shop/staff/generate-invite',
-      method: 'POST',
-      data: { 
-        shopId: this.data.shopId,
-        user_id: pendingStaff.id 
-      }
-    }).then((res: any) => {
-      // 提前赋值到 data，为原生分享做准备
-      this.setData({
-        shareToken: res.data.invite_token,
-        shareName: res.data.staff_name || pendingStaff.name || '新员工'
-      });
-    }).catch((err) => {
-      console.error('预生成邀请Token失败:', err);
-    });
   },
 
   goBack(): void {
     wx.navigateBack({ delta: 1 });
   },
+
+  // 阻止卡片点击事件冒泡
+  preventBubble(): void {},
 
   onTapStaff(e: WechatMiniprogram.TouchEvent): void {
     const item = e.currentTarget.dataset.item;
@@ -150,7 +123,7 @@ Page<IPageData, IPageCustom>({
           
           wx.showLoading({ title: '创建中...' });
 
-          // 调用后端：创建员工档案 (遵循 Bare Payload + RFC 7807 规范)
+          // 调用后端：创建员工档案
           request({
             url: '/api/v1/shop/staff/create',
             method: 'POST',
@@ -161,11 +134,10 @@ Page<IPageData, IPageCustom>({
           })
             .then(() => {
               wx.showToast({ title: '档案创建成功', icon: 'success' });
-              // 刷新列表（刷新后会自动触发 prepareInviteToken 准备新员工的 Token）
+              // 刷新列表（后端会自动生成新员工的 invite_token 并在列表中返回）
               this.fetchStaffList();
             })
             .catch((err: any) => {
-              // 💡 符合 RFC 7807 标准：错误体字段固定为 err.detail 或 err.title
               const errorMsg = err?.detail || err?.title || '创建失败，请稍后再试';
               wx.hideLoading();
               wx.showToast({
@@ -173,9 +145,6 @@ Page<IPageData, IPageCustom>({
                 icon: 'none',
                 duration: 2000
               });
-            })
-            .finally(() => {
-
             });
         }
       }
@@ -183,24 +152,28 @@ Page<IPageData, IPageCustom>({
   },
 
   // ------------------------------------------------------------------
-  // 微信原生分享钩子（用户点击 open-type="share" 按钮时自动调用）
+  // 🌟 核心：微信原生分享钩子（精确读取按钮上的 invite_token 凭证）
   // ------------------------------------------------------------------
-  onShareAppMessage(): WechatMiniprogram.Page.ICustomShareContent {
-    const token = this.data.shareToken;
-    const name = this.data.shareName;
+  onShareAppMessage(opts?: WechatMiniprogram.Page.IShareAppMessageOption): WechatMiniprogram.Page.ICustomShareContent {
+    // 默认通用分享
+    let shareTitle = '邀请你加入我们的店铺管理';
+    let sharePath = `/pages/invite-accept/index?shop_id=${this.data.shopId}`;
 
-    // 如果还没有生成 Token（比如没有待邀请员工）
-    if (!token) {
-      wx.showToast({
-        title: '暂无待邀请的员工档案',
-        icon: 'none'
-      });
+    // 如果是通过按钮点击触发的（即点击了列表里的某个“邀请”按钮）
+    if (opts && opts.from === 'button' && opts.target) {
+      const { token, staffName } = opts.target.dataset;
+
+      // 🌟 拿到了对应员工的专属 Token
+      if (token) {
+        shareTitle = `诚邀【${staffName || '员工'}】完成店铺身份绑定`;
+        sharePath = `/pages/invite-accept/index?token=${token}`;
+      }
     }
 
     return {
-      title: token ? `诚邀【${name}】加入我们的店铺` : '邀请你加入我们的店铺管理',
-      path: `/pages/invite-accept/index?token=${token || ''}`,
-      imageUrl: '/assets/logo.png'
+      title: shareTitle,
+      path: sharePath,
+      imageUrl: '/assets/logo.png' // 微信分享卡片封面路径
     };
   }
 });

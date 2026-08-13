@@ -101,23 +101,66 @@
                 </button>
               </view>
 
-              <!-- 出售卡片 -->
+              <!-- 出售卡片 (带模糊代词校验与手动修正) -->
               <view class="parsed-card card-out" wx:elif="{{item.parsedData.type === 'out' || item.parsedData.action === 'sell'}}">
-                <view class="card-title title-out">💰 设备解析成功 (出售)</view>
-                <view class="card-item">型号：{{item.parsedData.model || item.parsedData.model_or_id}}</view>
-                <view class="card-item">售价：￥{{item.parsedData.price || item.parsedData.sell_price}}</view>
-                <view class="card-item" wx:if="{{item.parsedData.notes}}">备注：{{item.parsedData.notes}}</view>
-                
-                <!-- 🌟 增加了 disabled, class 条件判断, data-index 和动态文字 -->
+                <view class="card-title title-out">
+                  <text>💰 设备解析成功 (出售)</text>
+                  <!-- ⚠️ 如果是模糊代词，显示异常警告标签 -->
+                  <text class="warn-badge" wx:if="{{item.parsedData.is_pronoun}}">请核对设备</text>
+                </view>
+
+                <!-- 🌟 1. 设备 ID 独立展示区（核心新增：有 ID 就优先醒目输出） -->
+                <view class="card-item" wx:if="{{item.parsedData.device_id || item.parsedData.id || (item.parsedData.selected_device && item.parsedData.selected_device.id)}}">
+                  <text class="item-label">设备 ID：</text>
+                  <text class="device-id-badge">#{{item.parsedData.device_id || item.parsedData.id || item.parsedData.selected_device.id}}</text>
+                </view>
+
+                <!-- 2. 型号展示与手动修改区（仅展示真实型号名称） -->
+                <view class="card-item model-select-row">
+                  <text class="item-label">型 号：</text>
+                  
+                  <!-- 情况 A：正常识别出具体型号 -> 静态显示（优先显示纯型号字符串） -->
+                  <text class="model-name" wx:if="{{!item.parsedData.is_pronoun}}">{{item.parsedData.model || item.parsedData.title}}</text>
+                  
+                  <!-- 情况 B：识别为代词/模糊词 -> 提供点击选择/修改按钮 -->
+                  <view class="pronoun-picker-wrap" wx:else>
+                    <picker 
+                      bindchange="onSelectStockDevice" 
+                      data-msg-index="{{index}}" 
+                      range="{{stockList}}" 
+                      range-key="display_name"
+                    >
+                      <view class="picker-trigger {{item.parsedData.selected_device ? 'selected' : 'unselected'}}">
+                        <!-- 这里的 display_name 在 JS 侧可拼成 "iPhone14 128G (白色) [ID:7]" 方便用户下拉时看全 -->
+                        <text>{{item.parsedData.selected_device ? item.parsedData.selected_device.model || item.parsedData.selected_device.title : '⚠️ 关联模糊，请点击选择库存设备'}}</text>
+                        <text class="arrow-down">▼</text>
+                      </view>
+                    </picker>
+                  </view>
+                </view>
+
+                <!-- 3. 售价信息 -->
+                <view class="card-item">
+                  <text class="item-label">售 价：</text>
+                  <text class="price-text">￥{{item.parsedData.price || item.parsedData.sell_price}}</text>
+                </view>
+
+                <!-- 4. 备注信息 -->
+                <view class="card-item" wx:if="{{item.parsedData.notes}}">
+                  <text class="item-label">备 注：</text>
+                  <text class="notes-text">{{item.parsedData.notes}}</text>
+                </view>
+
+                <!-- 5. 确认按钮（完全保留逻辑：已确认禁用 / 模糊代词且未选设备时禁用） -->
                 <button 
-                  class="confirm-btn btn-out {{item.isConfirmed ? 'btn-disabled' : ''}}" 
+                  class="confirm-btn btn-out {{item.isConfirmed || (item.parsedData.is_pronoun && !item.parsedData.selected_device) ? 'btn-disabled' : ''}}" 
                   size="mini" 
-                  disabled="{{item.isConfirmed}}"
+                  disabled="{{item.isConfirmed || (item.parsedData.is_pronoun && !item.parsedData.selected_device)}}"
                   bindtap="confirmSell" 
                   data-info="{{item.parsedData}}"
                   data-index="{{index}}"
                 >
-                  {{item.isConfirmed ? '已完成出库' : '确认出售/出库'}}
+                  {{item.isConfirmed ? '已完成出库' : (item.parsedData.is_pronoun && !item.parsedData.selected_device ? '请先选择对应设备' : '确认出售/出库')}}
                 </button>
               </view>
 

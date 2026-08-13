@@ -23,16 +23,16 @@
   <!-- 2. 顶部 Header 蓝底卡片 -->
   <view class="header-card" bindtap="goToProfile">
     <view class="avatar-box">
-      <image class="avatar-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='%23ffffff'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-3.8-1.04-4.83-2.61.03-.99 2.69-1.53 4.83-1.53s4.8.54 4.83 1.53C15.8 18.96 14.03 20 12 20z'/></svg>" mode="aspectFit" />
+      <image class="avatar-icon" src="/assets/logo.png" mode="aspectFit" />
     </view>
     <view class="user-info">
       <view class="title-row">
-        <text class="role-name">超级管理员</text>
+        <text class="role-name">个人信息</text>
         <text class="arrow-right-white">›</text>
       </view>
       <view class="sub-row">
-        <text class="shop-tip">演示(点我可切换店铺)</text>
-        <text class="switch-icon">⇄</text>
+        <!-- <text class="shop-tip">演示</text>
+        <text class="switch-icon">⇄</text> -->
       </view>
     </view>
   </view>

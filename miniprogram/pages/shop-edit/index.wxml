@@ -28,7 +28,7 @@
         <view class="row-label">
           <text class="required">*</text>店铺名称
         </view>
-        <input class="row-input" placeholder="演示 (点我可切换店铺)" value="{{formData.shopName}}" bindinput="onInputShopName" />
+        <input class="row-input" placeholder="演示" value="{{formData.shopName}}" bindinput="onInputShopName" />
       </view>
 
       <view class="form-row">

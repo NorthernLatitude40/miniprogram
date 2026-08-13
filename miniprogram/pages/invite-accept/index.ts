@@ -1,8 +1,9 @@
 // pages/invite-accept/index.ts
 import { request } from '../../utils/request';
 
-// 定义接受邀请成功的 Bare Payload 返回数据结构
+// 定义接受邀请成功的返回数据结构 (包含了 Token)
 interface AcceptInviteResult {
+  token: string;
   shop_id: number | string;
   staff_id?: number | string;
   role?: string;
@@ -12,34 +13,41 @@ interface AcceptInviteResult {
 Page({
   data: {
     inviteToken: '',
+    shopId: '',
     loading: false
   },
 
-  onLoad(options: { token?: string }) {
-    console.log('=== 接收到的完整 options ===', options);
-    if (options.token) {
-      this.setData({ inviteToken: decodeURIComponent(options.token) });
+  onLoad(options: any): void {
+    // 🌟 支持两种入参模式：
+    // 1. 成员专属邀请：带 token 参数
+    // 2. 店铺通用邀请：带 shop_id 参数
+    const { token, shop_id } = options;
+
+    if (token) {
+      // 凭证存在，写入 inviteToken
+      this.setData({ inviteToken: token });
+    } else if (shop_id) {
+      // 店铺通用邀请降级逻辑
+      this.setData({ shopId: shop_id });
     } else {
+      // 两者都没有，提示无效链接
       wx.showModal({
         title: '提示',
         content: '无效或过期的邀请链接',
-        showCancel: false,
-        success: () => {
-          // 没有 token 时自动关闭或跳转首页
-          this.navigateToHome();
-        }
+        showCancel: false
       });
+      return;
     }
   },
 
   // 统一的首页跳转逻辑（带兜底捕获）
   navigateToHome(): void {
-    // 💡 优先使用 reLaunch，清空页面栈并直接切到首页（无论首页是否为 Tab 页均有效）
+    // 💡 优先使用 reLaunch，清空页面栈并直接切到首页
     wx.reLaunch({
       url: '/pages/index/index',
       fail: (err) => {
         console.error('reLaunch 失败，尝试 switchTab 跳转:', err);
-        // 防御兜底：如果首页是 TabBar 页面且 reLaunch 失败，降级为 switchTab
+        // 防御兜底：降级为 switchTab
         wx.switchTab({
           url: '/pages/index/index',
           fail: (switchErr) => {
@@ -53,7 +61,8 @@ Page({
 
   // 点击【接受邀请，加入店铺】按钮
   async handleAccept(): Promise<void> {
-    if (!this.data.inviteToken) {
+    // 如果既没有 token 也没有 shopId，拦住请求
+    if (!this.data.inviteToken && !this.data.shopId) {
       wx.showToast({ title: '邀请凭证缺失', icon: 'none' });
       return;
     }
@@ -61,18 +70,43 @@ Page({
     this.setData({ loading: true });
 
     try {
-      // 1. 确保先静默登录，拿到当前微信用户的身份 token / openid
-      // await app.checkLogin(); 
+      // 🌟 1. 调用微信原生的 wx.login 获取临时登录 code
+      const loginRes = await new Promise<WechatMiniprogram.LoginSuccessCallbackResult>((resolve, reject) => {
+        wx.login({
+          success: resolve,
+          fail: reject
+        });
+      });
 
-      // 2. 提交绑定 (Bare Payload 裸响应模式)
+      if (!loginRes.code) {
+        throw new Error('获取微信登录凭证失败');
+      }
+
+      // 🌟 2. 构建请求 payload（包含 code 与邀请凭证）
+      const payload: Record<string, any> = {
+        code: loginRes.code
+      };
+
+      if (this.data.inviteToken) {
+        payload.invite_token = this.data.inviteToken;
+      } else {
+        payload.shop_id = this.data.shopId;
+      }
+
+      // 🌟 3. 提交绑定并获取 Access Token
       const res = await request<AcceptInviteResult>({
         url: '/api/v1/shop/accept-invite',
         method: 'POST',
-        data: { invite_token: this.data.inviteToken }
+        data: payload
       });
 
-      // 💡 成功拿到 res (直接就是数据对象，状态码非 2xx 会自动走 catch)
+      // 💡 4. 成功拿到返回数据
       if (res && res.shop_id) {
+        // 🌟 关键：保存正式的登录凭证 Token
+        if (res.token) {
+          wx.setStorageSync('token', res.token);
+        }
+
         // 写入全局店铺 ID 缓存
         wx.setStorageSync('current_shop_id', res.shop_id);
 
@@ -81,7 +115,7 @@ Page({
           content: '你已成功加入该店铺！',
           showCancel: false,
           success: () => {
-            // 💡 点击弹窗确认后，安全跳转首页
+            // 点击弹窗确认后安全跳转首页
             this.navigateToHome();
           }
         });
@@ -89,12 +123,12 @@ Page({
     } catch (err: any) {
       console.error('接受邀请失败:', err);
 
-      // 💡 符合 RFC 7807 错误规范：直接提取后端的 detail 或 title
-      const errorMsg = err?.detail || err?.title || '绑定失败，请稍后再试';
+      // 符合 RFC 7807 错误规范
+      const errorMsg = err?.detail || err?.title || err?.errMsg || '绑定失败，请稍后再试';
 
       wx.showModal({
         title: '提示',
-        content: errorMsg, // 完美显示：例如 "邀请信息已失效或不存在"
+        content: errorMsg,
         showCancel: false
       });
     } finally {

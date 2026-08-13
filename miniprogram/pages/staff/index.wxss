@@ -9,8 +9,7 @@ page {
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
-  /* 确保不会在垂直方向居中 */
-  display: block !important; 
+  display: block !important; /* 确保不会在垂直方向居中 */
 }
 
 /* ================= 1. 自定义导航栏 ================= */
@@ -51,14 +50,15 @@ page {
   pointer-events: none;
 }
 
-/* ================= 2. 页面主体内容（重置外边距，贴紧顶部） ================= */
+/* ================= 2. 页面主体内容 ================= */
 .page-content {
   width: 100%;
   padding-left: 24rpx;
   padding-right: 24rpx;
-  padding-bottom: 200rpx;
+  /* padding-top 可在 wxml 中直接内联绑定导航栏高度，避免遮挡 */
+  padding-bottom: 220rpx; 
   box-sizing: border-box;
-  margin: 0 !important; /* 清空可能存在的外边距 */
+  margin: 0 !important;
   display: block !important;
 }
 
@@ -67,7 +67,7 @@ page {
   display: flex;
   flex-direction: column;
   gap: 20rpx;
-  margin: 0 !important; /* 清空可能存在的外边距 */
+  margin: 0 !important;
   padding: 0 !important;
 }
 
@@ -81,6 +81,7 @@ page {
   justify-content: space-between !important;
   align-items: center !important;
   box-sizing: border-box;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .staff-item:active {
@@ -96,6 +97,21 @@ page {
 .staff-name {
   font-size: 30rpx;
   color: #333333;
+  font-weight: 500;
+}
+
+.staff-status {
+  font-size: 24rpx;
+  color: #999999;
+  padding: 4rpx 12rpx;
+  background: #f5f5f5;
+  border-radius: 6rpx;
+}
+
+/* 待认领黄色高亮标签 */
+.staff-status.unbound {
+  color: #ff9900;
+  background: #fffbe6;
 }
 
 .tag-creator {
@@ -112,10 +128,28 @@ page {
   gap: 12rpx;
 }
 
+/* 卡片右侧的小邀请按钮样式 */
+.btn-item-invite {
+  margin: 0 !important;
+  padding: 0 24rpx !important;
+  height: 56rpx !important;
+  line-height: 56rpx !important;
+  font-size: 24rpx !important;
+  font-weight: normal !important;
+  color: #2979ff !important;
+  background-color: #e8f3ff !important;
+  border-radius: 28rpx !important;
+}
+
+.btn-item-invite::after {
+  border: none;
+}
+
 .arrow {
   font-size: 32rpx;
   color: #cccccc;
   line-height: 1;
+  margin-left: 10rpx;
 }
 
 /* ================= 3. 底部操作栏 ================= */
@@ -123,25 +157,27 @@ page {
   position: fixed;
   bottom: 0;
   left: 0;
+  right: 0;
   width: 100%;
   background-color: #ffffff;
-  padding: 20rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
+  padding: 20rpx 24rpx calc(20rpx + env(safe-area-inset-bottom));
   display: flex;
   gap: 20rpx;
   box-sizing: border-box;
-  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.05);
   z-index: 99;
 }
 
 .btn-invite {
-  width: 200rpx !important;
+  flex: 1 !important;
   height: 88rpx;
-  background-color: #ffffff;
-  color: #333333;
+  line-height: 88rpx;
+  background-color: #f5f5f5 !important;
+  color: #333333 !important;
   border: 1rpx solid #e0e0e0;
   border-radius: 12rpx;
-  font-size: 30rpx;
-  font-weight: normal;
+  font-size: 28rpx !important;
+  font-weight: normal !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,12 +185,13 @@ page {
 }
 
 .btn-add {
-  flex: 1;
+  flex: 2 !important;
   height: 88rpx;
-  background-color: #2979ff;
-  color: #ffffff;
+  line-height: 88rpx;
+  background-color: #2979ff !important;
+  color: #ffffff !important;
   border-radius: 12rpx;
-  font-size: 30rpx;
+  font-size: 28rpx !important;
   font-weight: 500;
   display: flex;
   align-items: center;
