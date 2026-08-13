@@ -1,0 +1,70 @@
+<view class="container">
+  <!-- 自定義導航欄 -->
+  <view class="custom-nav-bar" style="height: {{navBarHeight}}px;">
+    <!-- 返回按鈕：高度與膠囊一致，頂部與膠囊對齊 -->
+    <view 
+      class="back-btn" 
+      bindtap="goBack" 
+      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
+    >
+      <text class="back-icon">‹</text>
+    </view>
+    
+    <!-- 標題：高度與膠囊一致，頂部與膠囊對齊 -->
+    <view 
+      class="nav-title" 
+      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
+    >
+      員工詳情
+    </view>
+  </view>
+
+  <!-- 頁面主體：padding-top 設為 navBarHeight，正好接在導航欄下方 -->
+  <view class="page-content">
+    
+    <view class="detail-card {{staffInfo.status === 2 ? 'card-disabled' : ''}}">
+      <!-- 1. 修改姓名/備註 -->
+      <view class="info-row clickable" bindtap="onEditName">
+        <text class="label">員工姓名/備註</text>
+        <view class="value-group">
+          <text class="value">{{staffInfo.name}}</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 2. 修改角色權限 (當前用戶為 owner/manager 且目標非店主時顯示可點擊箭頭) -->
+      <view 
+        class="info-row {{(currentUserRole === 'owner' || currentUserRole === 'manager') && !staffInfo.isCreator && staffInfo.role !== 'owner' ? 'clickable' : ''}}" 
+        bindtap="onEditRole"
+      >
+        <text class="label">角色權限</text>
+        <view class="value-group">
+          <text class="value">{{staffInfo.roleName || staffInfo.role || '店員'}}</text>
+          <!-- 權限判斷：具備權限且非店主時顯示箭頭 -->
+          <text class="arrow" wx:if="{{(currentUserRole === 'owner' || currentUserRole === 'manager') && !staffInfo.isCreator && staffInfo.role !== 'owner'}}">›</text>
+        </view>
+      </view>
+
+      <!-- 3. 當前狀態 -->
+      <view class="info-row">
+        <text class="label">當前狀態</text>
+        <view class="status-box">
+          <text class="status-tag status-pending" wx:if="{{staffInfo.status === 0}}">待認領</text>
+          <text class="status-tag status-active" wx:elif="{{staffInfo.status === 1}}">正常在職</text>
+          <text class="status-tag status-disabled" wx:elif="{{staffInfo.status === 2}}">已禁用</text>
+        </view>
+      </view>
+    </view>
+
+  </view>
+
+  <!-- 底部固定按鈕 -->
+  <view class="bottom-bar" wx:if="{{staffInfo && staffInfo.status !== 0}}">
+    <button 
+      class="btn-action {{staffInfo.status === 2 ? 'btn-enable' : 'btn-disable'}}" 
+      bindtap="onToggleStatus"
+    >
+      {{staffInfo.status === 2 ? '啟用該員工' : '禁用該員工'}}
+    </button>
+  </view>
+</view>

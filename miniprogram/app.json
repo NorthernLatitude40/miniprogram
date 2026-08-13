@@ -8,7 +8,8 @@
     "pages/shop/index",
     "pages/staff/index",
     "pages/shop-edit/index",
-    "pages/invite-accept/index"
+    "pages/invite-accept/index",
+    "pages/staff-detail/index"
   ],
   "networkTimeout": {
     "request": 120000,

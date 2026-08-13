@@ -100,10 +100,18 @@ Page<IPageData, IPageCustom>({
   // 阻止卡片点击事件冒泡
   preventBubble(): void {},
 
-  onTapStaff(e: WechatMiniprogram.TouchEvent): void {
-    const item = e.currentTarget.dataset.item;
-    console.log('点击员工：', item);
-  },
+// onTapStaff 事件：點擊員工條目進入詳情頁
+onTapStaff(e: WechatMiniprogram.TouchEvent): void {
+  const item: StaffItem = e.currentTarget.dataset.item;
+  if (!item) return;
+
+  // encodeURIComponent 避免姓名或數據中包含特殊字符導致 URL 解析失敗
+  const staffData = encodeURIComponent(JSON.stringify(item));
+
+  wx.navigateTo({
+    url: `/pages/staff-detail/index?shopId=${this.data.shopId}&staffData=${staffData}`
+  });
+},
 
   // ------------------------------------------------------------------
   // 【+ 新增员工信息】逻辑
