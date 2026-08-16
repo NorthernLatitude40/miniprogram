@@ -1,18 +1,21 @@
-// app.ts
 App<IAppOption>({
   globalData: {},
   onLaunch() {
-    // 展示本地存储能力
-    const logs = wx.getStorageSync('logs') || []
-    logs.unshift(Date.now())
-    wx.setStorageSync('logs', logs)
+    const logs = wx.getStorageSync('logs') || [];
+    logs.unshift(Date.now());
+    wx.setStorageSync('logs', logs);
 
-    // 登录
+    // 直接在 onLaunch 内调用
     wx.login({
-      success: res => {
-        console.log(res.code)
-        // 发送 res.code 到后台换取 openId, sessionKey, unionId
+      timeout: 3000,
+      success: (res) => {
+        if (res.code) {
+          console.log('[wx.login success] code:', res.code);
+        }
       },
-    })
-  },
-})
+      fail: (err) => {
+        console.warn('[wx.login fail]:', err);
+      }
+    });
+  }
+});

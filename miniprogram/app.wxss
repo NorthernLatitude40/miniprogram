@@ -8,3 +8,23 @@
   padding: 200rpx 0;
   box-sizing: border-box;
 } 
+
+/* 全局通欄主按鈕樣式 */
+.btn-primary {
+  width: 100% !important;     /* 🌟 強制覆蓋小程式預設的 184px 寬度 */
+  box-sizing: border-box;     /* 確保 padding 不會撐大按鈕 */
+  background-color: #2f74ff;  /* 統一主題藍 */
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 500;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 16rpx;        /* 統一 16rpx 微圓角 */
+  text-align: center;
+  border: none;
+  padding: 0;                 /* 清除預設內邊距 */
+}
+
+.btn-primary:active {
+  opacity: 0.88;
+}

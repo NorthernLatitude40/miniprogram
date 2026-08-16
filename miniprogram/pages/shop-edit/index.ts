@@ -91,7 +91,7 @@ Page<IPageData, IPageCustom>({
     wx.showLoading({ title: '加载中...' });
 
     request<ShopInfo>({ 
-      url: '/api/v1/shop/current', 
+      url: '/api/v1/shops/current', 
       method: 'GET' 
     })
       .then((shopData) => {
@@ -170,10 +170,10 @@ Page<IPageData, IPageCustom>({
     }
 
     const isEdit = this.data.isEdit;
-    const url = isEdit ? '/api/v1/shop/update' : '/api/v1/shop/create';
+    const url = isEdit ? '/api/v1/shops/update' : '/api/v1/shops/create';
     const method = isEdit ? 'PUT' : 'POST';
 
-    wx.showLoading({ title: isEdit ? '更新中...' : '正在创建...' });
+    wx.showLoading({ title: isEdit ? '更新中...' : '正在创建...', mask: true });
 
     request({
       url,
@@ -189,26 +189,39 @@ Page<IPageData, IPageCustom>({
         address_detail: addressDetail
       }
     }).then((res: any) => {
+      // 🌟 只要能走进 .then，说明 HTTP status 就是 2xx (200/201)，绝对成功！
       wx.hideLoading();
-      if (res.code === 200) {
-        wx.showToast({
-          title: isEdit ? '修改成功' : '创建成功',
-          icon: 'success',
-          duration: 1500
-        });
 
-        setTimeout(() => {
-          if (isEdit) {
-            wx.navigateBack({ delta: 1 }); // 编辑成功后返回上一页
-          } else {
-            wx.reLaunch({ url: '/pages/index/index' }); // 新建成功进入首页
-          }
-        }, 1500);
-      }
-    }).catch((err: any) => {
-      wx.hideLoading();
+      // 如果是创建店铺，更新全局 current_shop_id 缓存
+      // const newShopId = res?.id || res?.shop_id;
+      // if (newShopId) {
+      //   wx.setStorageSync('current_shop_id', newShopId);
+      // }
+
       wx.showToast({
-        title: err.detail || '操作失败，请重试',
+        title: isEdit ? '修改成功' : '创建成功',
+        icon: 'success',
+        duration: 1500,
+        mask: true
+      });
+
+      setTimeout(() => {
+        if (isEdit) {
+          wx.navigateBack({ delta: 1 });
+        } else {
+          wx.reLaunch({ url: '/pages/index/index' });
+        }
+      }, 1500);
+
+    }).catch((err: any) => {
+      // 🌟 只要 HTTP status 是 4xx/5xx，request 会 reject，直接走进 .catch
+      wx.hideLoading();
+      console.error('保存店铺失败:', err);
+
+      // 使用导出函数优雅格式化错误信息
+      const errorMsg = formatErrorMessage(err);
+      wx.showToast({
+        title: errorMsg,
         icon: 'none'
       });
     });

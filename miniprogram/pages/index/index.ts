@@ -99,6 +99,15 @@ interface PageCustomMethods {
   onSelectDeviceClarify: (selectedDevice: any) => void;
 }
 
+// 🌟 核心修复：定义为动态 Getter 函数，避免顶层静态变量无法更新缓存的问题
+const getCurrentShopId = (): string | number => {
+  return wx.getStorageSync('shop_id') || wx.getStorageSync('current_shop_id') || 1;
+};
+
+const getCurrentUserRole = (): string => {
+  return wx.getStorageSync('role') || 'staff';
+};
+
 Page<PageData, PageCustomMethods>({
   data: {
     userRole: 'staff',
@@ -144,12 +153,12 @@ Page<PageData, PageCustomMethods>({
       return;
     }
 
-    const role = wx.getStorageSync('role') || 'staff';
+    const role = getCurrentUserRole();
     this.setData({ userRole: role });
 
     this.checkUserShopStatus();
 
-    if (role === 'admin' || role === 'manager') {
+    if (role === 'admin' || role === 'manager' || role === 'owner') {
       this.fetchDashboardStats();
     }
   },
@@ -157,7 +166,11 @@ Page<PageData, PageCustomMethods>({
   fetchStockList() {
     request<{ items?: StockItem[] }>({
       url: '/api/v1/shop/inventory/list?status=1',
-      method: 'GET'
+      method: 'GET',
+      header: {
+        'X-Shop-Id': String(getCurrentShopId()),
+        'X-User-Role': getCurrentUserRole(),
+      },
     })
       .then((resData) => {
         if (resData && resData.items) {
@@ -219,7 +232,7 @@ Page<PageData, PageCustomMethods>({
   },
 
   checkUserShopStatus() {
-    request<{ id?: number | string }>({ url: '/api/v1/shop/current', method: 'GET' })
+    request<{ id?: number | string }>({ url: '/api/v1/shops/current', method: 'GET' })
       .then((resData) => {
         if (!resData || !resData.id) {
           wx.redirectTo({
@@ -271,7 +284,7 @@ Page<PageData, PageCustomMethods>({
     this.setData({ inputMsg: e.detail.value });
   },
 
-  // 🌟 1. 移到外部：多设备选择器 ActionSheet
+  // 🌟 1. 多设备选择器 ActionSheet
   showDevicePicker(candidates: Array<any>) {
     if (!candidates || candidates.length === 0) return;
 
@@ -306,16 +319,14 @@ Page<PageData, PageCustomMethods>({
     });
   },
 
-  // 🌟 2. 移到外部：澄清后的自动发送逻辑
+  // 🌟 2. 澄清后的自动发送逻辑
   onSelectDeviceClarify(selectedDevice: any) {
     const clarifyText = `选 ID ${selectedDevice.id} 这台`;
-    // 直接调起页面自身的 sendToAgent 方法
     this.sendToAgent(clarifyText);
   },
 
   // 🌟 3. 发送消息逻辑（支持传入 overrideText 覆盖 inputMsg）
   sendToAgent(overrideText?: any) {
-    // 1. 安全提取字符串：如果 overrideText 不是字符串（比如点击事件对象 e），则忽略它，优先取 this.data.inputMsg
     let rawInput = '';
     
     if (typeof overrideText === 'string') {
@@ -324,17 +335,14 @@ Page<PageData, PageCustomMethods>({
       rawInput = this.data.inputMsg || '';
     }
 
-    // 2. 防呆校验：强转为 String 类型，确保 .trim() 绝对安全
     const text = String(rawInput).trim();
 
-    // 如果内容为空，直接拦截返回
     if (!text) return;
 
     const userMsg: ChatMessage = { role: 'user', content: text };
     const currentMessages = this.data.messages || [];
     const messagesWithUser = [...currentMessages, userMsg];
 
-    // 3. 判断是否为澄清/内部调用（如果是内部调用则保留输入框草稿，否则清空）
     const isOverride = typeof overrideText === 'string';
 
     this.setData({
@@ -348,16 +356,15 @@ Page<PageData, PageCustomMethods>({
       mask: true
     });
 
-    const currentShopId = wx.getStorageSync('shop_id') || wx.getStorageSync('current_shop_id') || 1;
-    const role = wx.getStorageSync('role') || 'staff';
-    const sessionId = wx.getStorageSync('session_id') || wx.getStorageSync('role') || `session_${Date.now()}`;
+    const currentRole = getCurrentUserRole();
+    const sessionId = wx.getStorageSync('session_id') || currentRole || `session_${Date.now()}`;
 
     request<AgentApiResponse>({
       url: '/api/v1/shop/chat',
       method: 'POST',
       header: {
-        'X-Shop-Id': String(currentShopId),
-        'X-User-Role': role,
+        'X-Shop-Id': String(getCurrentShopId()),
+        'X-User-Role': currentRole,
       },
       data: {
         message: text,
@@ -437,7 +444,7 @@ Page<PageData, PageCustomMethods>({
           lastMsgId: `msg-${finalMessages.length - 1}`,
         });
 
-        if (role === 'admin' || role === 'manager') {
+        if (currentRole === 'admin' || currentRole === 'manager') {
           this.fetchDashboardStats();
         }
       })
@@ -497,8 +504,8 @@ Page<PageData, PageCustomMethods>({
           
           this.fetchStockList();
 
-          const role = wx.getStorageSync('role') || 'staff';
-          if (role === 'admin' || role === 'manager') {
+          const currentRole = getCurrentUserRole();
+          if (currentRole === 'admin' || currentRole === 'manager') {
             this.fetchDashboardStats();
           }
         })
@@ -547,8 +554,8 @@ Page<PageData, PageCustomMethods>({
 
           this.fetchStockList();
 
-          const role = wx.getStorageSync('role') || 'staff';
-          if (role === 'admin' || role === 'manager') {
+          const currentRole = getCurrentUserRole();
+          if (currentRole === 'admin' || currentRole === 'manager') {
             this.fetchDashboardStats();
           }
         })

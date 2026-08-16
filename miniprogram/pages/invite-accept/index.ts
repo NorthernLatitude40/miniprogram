@@ -95,7 +95,7 @@ Page({
 
       // 🌟 3. 提交绑定并获取 Access Token
       const res = await request<AcceptInviteResult>({
-        url: '/api/v1/shop/accept-invite',
+        url: '/api/v1/shop/staffs/accept-invite',
         method: 'POST',
         data: payload
       });

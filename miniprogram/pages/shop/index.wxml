@@ -20,11 +20,13 @@
   <view class="page-content" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
     
     <!-- 店铺图标与名字 -->
-    <view class="shop-header" bindtap="onSwitchShop">
+    <view class="shop-header" bindtap="onSwitchShop" hover-class="card-hover">
       <view class="icon-wrapper">
         <view class="css-shop-icon"></view>
       </view>
-      <view class="shop-name">{{shopInfo.shopName}}</view>
+      <view class="shop-name-row">
+        <text class="shop-name">{{shopInfo.shopName}}</text>
+      </view>
     </view>
 
     <!-- 功能菜单列表 -->
@@ -46,6 +48,14 @@
           <text class="arrow">›</text>
         </view>
       </view>
+    </view>
+
+    <!-- 🌟 新增：底部固定置底按鈕區 -->
+    <view class="bottom-button-placeholder"></view> <!-- 佔位防止內容被擋住 -->
+    <view class="bottom-button-wrapper">
+      <button class="btn-primary" bindtap="goToCreateShop">
+        <text class="icon">+</text> 創建新店鋪
+      </button>
     </view>
 
   </view>

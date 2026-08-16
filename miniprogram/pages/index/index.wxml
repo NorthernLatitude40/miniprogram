@@ -8,10 +8,10 @@
     <!-- 收支概览看板 -->
     <view class="card header-card">
       <!-- 🌟 情况 A：有权限 (Admin / Manager) -> 正常展示数据看板 -->
-      <block wx:if="{{userRole === 'admin' || userRole === 'manager'}}">
+      <block wx:if="{{userRole === 'admin' || userRole === 'owner' || userRole === 'manager'}}">
         <view class="card-header-bar">
           <text class="card-title">今日经营概览</text>
-          <text class="role-badge {{userRole}}">{{userRole === 'admin' ? '管理员' : '店长'}}</text>
+          <text class="role-badge {{userRole}}">{{userRole === 'admin' ? '超级管理员' : '店长'}}</text>
         </view>
 
         <view class="stats-grid">

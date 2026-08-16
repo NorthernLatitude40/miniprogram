@@ -1,4 +1,4 @@
-import { request } from '../../utils/request';
+import { request, formatErrorMessage } from '../../utils/request';
 
 export {};
 
@@ -16,12 +16,12 @@ interface StaffDetail {
 const ROLE_OPTIONS = ['店長', '店員'];
 const ROLE_MAP: Record<string, string> = {
   '店長': 'manager',
-  '店員': 'clerk'
+  '店員': 'staff'
 };
 const ROLE_NAME_MAP: Record<string, string> = {
   'owner': '店主',
   'manager': '店長',
-  'clerk': '店員'
+  'staff': '店員'
 };
 const role = wx.getStorageSync('role') || 'staff';
 const currentShopId = wx.getStorageSync('shop_id') || wx.getStorageSync('current_shop_id') || 1;
@@ -34,7 +34,7 @@ Page({
     menuTop: 40,
     menuHeight: 32,
 
-    // 當前登錄用戶的角色 (owner | manager | clerk)，實際開發中可從 App 全局或 Storage 讀取
+    // 當前登錄用戶的角色 (owner | manager | staff)，實際開發中可從 App 全局或 Storage 讀取
     currentUserRole: 'manager', 
 
     // 業務數據
@@ -96,7 +96,11 @@ Page({
   // ------------------------------------------------------------------
   onEditName(): void {
     const staff = this.data.staffInfo;
-    if (!staff) return;
+    // 校验员工对象及其 ID 是否存在
+    if (!staff || !staff.id) {
+      wx.showToast({ title: '员工信息异常', icon: 'none' });
+      return;
+    }
 
     wx.showModal({
       title: '修改員工姓名',
@@ -111,20 +115,17 @@ Page({
             return;
           }
 
-          wx.showLoading({ title: '保存中...' });
-
-          // 對接統一的 PUT 接口
+          // 🌟 将 id、role 和 name 统一放入 data (请求体)
           request({
-            url: `/api/v1/shop/staffs/${staff.id}`,
+            url: '/api/v1/shop/staffs',
             method: 'PUT',
-            header: {
-              'X-Shop-Id': String(currentShopId),
-              'X-User-Role': role,
-            },
-            data: { name: newName }
+            loadingText: '保存中...',
+            data: {
+              id: staff.id,      // 员工 ID
+              name: newName      // 新姓名
+            }
           })
             .then(() => {
-              wx.hideLoading();
               wx.showToast({ title: '修改成功', icon: 'success' });
               
               // 更新本地頁面數據
@@ -133,9 +134,10 @@ Page({
               });
             })
             .catch((err: any) => {
-              wx.hideLoading();
-              const errorMsg = err?.detail || '修改失敗';
-              wx.showToast({ title: errorMsg, icon: 'none' });
+              if (!err?.isSilent) {
+                const errorMsg = formatErrorMessage(err);
+                wx.showToast({ title: errorMsg, icon: 'none' });
+              }
             });
         }
       }
@@ -177,13 +179,16 @@ Page({
 
         // 對接統一的 PUT 接口
         request({
-          url: `/api/v1/shop/staffs/${staff.id}`,
+          url: `/api/v1/shop/staffs`,
           method: 'PUT',
           header: {
             'X-Shop-Id': String(currentShopId),
             'X-User-Role': role,
           },
-          data: { role: selectedRoleValue }
+          data: { 
+            id: staff.id,      // 员工 ID
+            role: selectedRoleValue
+           }
         })
           .then(() => {
             wx.hideLoading();
@@ -231,13 +236,16 @@ Page({
 
           // 🌟 核心調整：改用統一的 PUT 接口，不調用子路由 /status
           request({
-            url: `/api/v1/shop/staffs/${staff.id}`,
+            url: `/api/v1/shop/staffs`,
             method: 'PUT',
             header: {
               'X-Shop-Id': String(currentShopId),
               'X-User-Role': role,
             },
-            data: { status: targetStatus }
+            data: { 
+              id: staff.id,      // 员工 ID
+              status: targetStatus 
+            }
           })
             .then(() => {
               wx.hideLoading();

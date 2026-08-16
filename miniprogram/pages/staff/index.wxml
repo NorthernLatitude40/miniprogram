@@ -18,10 +18,10 @@
           <!-- 左侧：员工信息 -->
           <view class="staff-info">
             <text class="staff-name">{{item.name}}</text>
-            
+
             <!-- 兼容 status、isActive 和 is_active 多种判断方式 -->
-            <text class="staff-status {{ (item.status === 0 || item.isActive === false || item.is_active === false) ? 'unbound' : '' }}">
-              {{ (item.status === 0 || item.isActive === false || item.is_active === false) ? '待认领' : (item.roleName || '员工') }}
+            <text class="staff-status {{ item.status === 0  ? 'unbound' : (item.status === 2 ? 'disabled' : '') }}">
+              {{ item.status === 0  ? '待認領' : (item.status === 2 ? '已禁用' : (item.roleName || '員工')) }}
             </text>
           </view>
           
@@ -31,7 +31,7 @@
             
             <!-- 🌟 核心修改点：改为将 item.invite_token 绑定在 data-token 属性上 -->
             <button 
-              wx:if="{{item.status === 0 || item.isActive === false || item.is_active === false}}" 
+              wx:if="{{item.status === 0}}" 
               class="btn-item-invite" 
               open-type="share" 
               data-token="{{item.invite_token}}" 

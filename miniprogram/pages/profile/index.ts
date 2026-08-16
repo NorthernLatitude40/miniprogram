@@ -1,5 +1,13 @@
-// pages/profile/index.ts
 import { request } from '../../utils/request'; 
+import { fetchUserInfo } from '../../utils/user';
+
+interface ShopItem {
+  id: number;
+  name: string;
+  role: string;
+  staff_id: number;
+  is_default?: boolean;
+}
 
 Page({
   data: {
@@ -8,9 +16,12 @@ Page({
     menuTop: 40,
     menuHeight: 32,
     userInfo: {
+      id: null,
       nickname: '--',
+      role: 'staff',
       roleName: '--',
       phone: '--',
+      shop_id: null,
       shopName: '--',
       avatar: ''
     }
@@ -29,30 +40,19 @@ Page({
       menuTop: menuButton.top,
       menuHeight: menuButton.height
     });
+  },
 
-    this.fetchUserInfo();
+  // 🌟 使用 onShow 确保从其他页面返回时能刷新最新数据
+  onShow(): void {
+    this.loadUserInfo();
   },
 
   /**
-   * 获取个人信息
+   * 加载最新用户信息
    */
-  fetchUserInfo(): void {
-    request({
-      url: '/api/v1/auth/me',
-      method: 'GET'
-    }).then((res: any) => {
-      const d = res?.data || res;
-      if (d) {
-        this.setData({
-          userInfo: {
-            nickname: d.nickname || '微信用户',
-            roleName: d.role_name || d.roleName || d.role || '店员',
-            phone: d.phone || d.mobile || '--',
-            shopName: d.shop_name || d.shopName || '默认店铺',
-            avatar: d.avatar_url || d.avatar || ''
-          }
-        });
-      }
+  loadUserInfo(): void {
+    fetchUserInfo().then((userInfo) => {
+      this.setData({ userInfo });
     }).catch((err: any) => {
       console.error('获取用户信息失败:', err);
       if (err?.status === 401) {
@@ -63,22 +63,100 @@ Page({
     });
   },
 
+  // 1. 设置默认店铺/身份 API 逻辑 (单独解耦，不再触发 /me 刷新)
+  setDefaultShopApi(selectedShop: ShopItem): void {
+    wx.showLoading({ title: '设置中...', mask: true });
+
+    request({
+      url: '/api/v1/user/default-identity',
+      method: 'PUT',
+      data: {
+        default_shop_id: selectedShop.id,
+        default_staff_id: selectedShop.staff_id
+      }
+    }).then(() => {
+      wx.hideLoading();
+      // 成功提示，不触发个人资料页的数据重绘与更新
+      wx.showToast({ title: '默认店铺设置成功', icon: 'success' });
+    }).catch((err) => {
+      wx.hideLoading();
+      console.error('设置默认店铺失败:', err);
+      wx.showToast({ 
+        title: err?.data?.detail || '设置默认店铺失败', 
+        icon: 'none' 
+      });
+    });
+  },
+
+  // 2. 选择默认店铺列表逻辑
+  handleSelectDefaultShop(): void {
+    wx.showLoading({ title: '加载店铺列表中...', mask: true });
+
+    // 获取当前用户绑定的所有店铺（包含同一店铺的不同身份）
+    request<ShopItem[]>({
+      url: '/api/v1/shops/my-shops',
+      method: 'GET'
+    }).then((shops) => {
+      wx.hideLoading();
+
+      if (!Array.isArray(shops) || shops.length === 0) {
+        wx.showToast({ title: '暂无关联店铺', icon: 'none' });
+        return;
+      }
+
+      // 全量保留所有数据，拼接格式：店铺名 (角色) (当前默认)
+      const itemList = shops.map(s => {
+        const roleText = s.role ? ` (${s.role})` : '';
+        const defaultText = s.is_default ? ' (当前默认)' : '';
+        return `${s.name}${roleText}${defaultText}`;
+      });
+
+      wx.showActionSheet({
+        itemList: itemList,
+        success: (res) => {
+          const selectedShop = shops[res.tapIndex];
+          if (!selectedShop) return;
+
+          // 若点击的就是当前后端已记为默认的身份，无需重复发起更新
+          if (selectedShop.is_default) {
+            wx.showToast({ title: '该身份已经是默认设置', icon: 'none' });
+            return;
+          }
+
+          // 调用解耦后的新 API 设置为默认店铺与身份
+          this.setDefaultShopApi(selectedShop);
+        }
+      });
+    }).catch((err) => {
+      wx.hideLoading();
+      console.error('获取店铺列表失败:', err);
+      wx.showToast({ title: '获取店铺列表失败', icon: 'none' });
+    });
+  },  
+
   /**
-   * 提交更新用户信息请求
+   * 提交更新用户信息请求（修改昵称、手机号等）
    */
   updateProfileApi(data: { nickname?: string; phone?: string; avatar_url?: string }) {
     wx.showLoading({ title: '保存中...', mask: true });
 
+    const currentShopId = wx.getStorageSync('current_shop_id') || wx.getStorageSync('shop_id') || '';
+    const role = wx.getStorageSync('role') || 'staff';
+
     request({
       url: '/api/v1/auth/me',
       method: 'PUT',
+      header: {
+        'X-Shop-Id': String(currentShopId),
+        'X-User-Role': role,
+      },
       data
-    }).then((res: any) => {
+    }).then(() => {
       wx.hideLoading();
       wx.showToast({ title: '修改成功', icon: 'success' });
       
       // 重新刷新页面数据
-      this.fetchUserInfo();
+      this.loadUserInfo();
     }).catch((err: any) => {
       wx.hideLoading();
       console.error('更新用户信息失败:', err);
@@ -146,6 +224,9 @@ Page({
         if (res.confirm) {
           wx.removeStorageSync('token');
           wx.removeStorageSync('userInfo');
+          wx.removeStorageSync('current_shop_id');
+          wx.removeStorageSync('current_staff_id');
+          wx.removeStorageSync('role');
           wx.showToast({
             title: '已退出登录',
             icon: 'success'

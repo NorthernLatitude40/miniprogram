@@ -113,6 +113,10 @@ page {
   color: #ff9900;
   background: #fffbe6;
 }
+.staff-status.disabled {
+  color: #ff0000; /* 已禁用：灰色 */
+  background-color: #f5f5f5;
+}
 
 .tag-creator {
   font-size: 22rpx;

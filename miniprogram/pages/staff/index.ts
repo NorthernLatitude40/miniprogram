@@ -10,7 +10,7 @@ interface StaffItem {
   phone?: string;
   isActive?: boolean;
   is_active?: boolean;
-  status?: number; // 0: 待认领, 1: 正常
+  status?: number; // 0: 待认领, 1: 正常， 2：禁用
   invite_token?: string; // 🌟 接收后端返回的加密 Token
 }
 
@@ -42,6 +42,12 @@ Page<IPageData, IPageCustom>({
     shopId: ''
   },
 
+  // 🌟 每次頁面顯示（包含初始化、從詳情頁返回）都會執行
+  onShow() {
+    // 3. 拉取员工列表
+    this.fetchStaffList();
+  },
+
   onLoad(): void {
     // 1. 获取当前 shopId
     const currentShopId = wx.getStorageSync('current_shop_id') || '';
@@ -62,8 +68,6 @@ Page<IPageData, IPageCustom>({
       menuHeight: menuButton.height || 32
     });
 
-    // 3. 拉取员工列表
-    this.fetchStaffList();
   },
 
   // 查询当前店铺下的所有员工
@@ -71,9 +75,8 @@ Page<IPageData, IPageCustom>({
     wx.showLoading({ title: '加载中...' });
 
     request({
-      url: `/api/v1/shop/staff/list`,
-      method: 'GET',
-      data: { shopId: this.data.shopId }
+      url: `/api/v1/shop/staffs`,
+      method: 'GET'
     })
       .then((res: any) => {
         wx.hideLoading();
@@ -133,7 +136,7 @@ onTapStaff(e: WechatMiniprogram.TouchEvent): void {
 
           // 调用后端：创建员工档案
           request({
-            url: '/api/v1/shop/staff/create',
+            url: '/api/v1/shop/staffs/create',
             method: 'POST',
             data: {
               nickname: staffName,

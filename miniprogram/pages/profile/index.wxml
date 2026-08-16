@@ -48,9 +48,12 @@
 
     <view class="divider"></view>
 
-    <view class="info-item">
+    <view class="info-item" bindtap="handleSelectDefaultShop">
       <text class="label">绑定店铺</text>
-      <text class="value">{{userInfo.shopName}}</text>
+      <view class="value-wrap">
+        <text class="value">{{userInfo.shopName}}</text>
+        <text class="arrow">></text>
+      </view>
     </view>
   </view>
 
