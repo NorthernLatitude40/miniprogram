@@ -1,8 +1,8 @@
 <!-- pages/my/index.wxml -->
 <view class="container">
-  <!-- 1. 自定义导航栏区域 -->
+  <!-- 1. 自定義導航欄區域 -->
   <view class="custom-nav-bar" style="height: {{statusBarHeight + navBarHeight}}px;">
-    <!-- 返回按钮：严格与右侧胶囊对齐 -->
+    <!-- 返回按鈕：嚴格與右側膠囊對齊 -->
     <view 
       class="back-btn" 
       bindtap="goBack"
@@ -11,23 +11,23 @@
       <text class="back-icon">‹</text>
     </view>
 
-    <!-- 标题：垂直居中 -->
+    <!-- 標題：垂直居中 -->
     <view 
       class="nav-title" 
       style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
     >
-      我的
+      {{t.my || '我的'}}
     </view>
   </view>
 
-  <!-- 2. 顶部 Header 蓝底卡片 -->
+  <!-- 2. 頂部 Header 藍底卡片 -->
   <view class="header-card" bindtap="goToProfile">
     <view class="avatar-box">
       <image class="avatar-icon" src="/assets/logo.png" mode="aspectFit" />
     </view>
     <view class="user-info">
       <view class="title-row">
-        <text class="role-name">个人信息</text>
+        <text class="role-name">{{t.profile_info || '個人資訊'}}</text>
         <text class="arrow-right-white">›</text>
       </view>
       <view class="sub-row">
@@ -37,14 +37,30 @@
     </view>
   </view>
 
-  <!-- 3. 店铺管理卡片 -->
+  <!-- 3. 功能選單卡片區域 -->
   <view class="section-card">
+    <!-- 店鋪管理 -->
     <view class="menu-row" bindtap="goToShopManagement">
       <view class="row-left">
         <text class="row-icon">🏪</text>
         <view class="row-text-group">
-          <text class="row-title">店铺管理</text>
-          <text class="row-desc">店铺信息 | 员工管理</text>
+          <text class="row-title">{{t.shop_management || '店鋪管理'}}</text>
+          <text class="row-desc">{{t.shop_mgmt_desc || '店鋪資訊 | 員工管理'}}</text>
+        </view>
+      </view>
+      <text class="arrow-right">›</text>
+    </view>
+
+    <!-- 🌟 新增：語言設置選單 -->
+    <view class="menu-row" bindtap="onSelectLanguage">
+      <view class="row-left">
+        <text class="row-icon">🌐</text>
+        <view class="row-text-group">
+          <text class="row-title">{{t.language_setting || '語言設置'}}</text>
+          <text class="row-desc">{{currentLangSetting === 'system' ? 
+          (t.lang_system || '跟隨系統') : 
+          (currentLangSetting === 'zh_HK' ? '繁體中文' : (currentLangSetting === 'ja' ? '日本語' : (currentLangSetting === 'en' ? 'English' : '简体中文')))}}
+          </text>
         </view>
       </view>
       <text class="arrow-right">›</text>

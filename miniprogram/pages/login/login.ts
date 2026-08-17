@@ -63,7 +63,6 @@ Page({
 
             // 存储 Token 凭证
             wx.setStorageSync('token', dataObj.token);
-            debugger
             // 3. 登录成功后，获取用户关联的所有店铺列表，判断进入哪个店铺
             self.loadShopListAndNavigate(dataObj.user_info);
 

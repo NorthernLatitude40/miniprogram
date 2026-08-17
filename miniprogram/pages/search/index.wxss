@@ -1,0 +1,229 @@
+/* pages/search/index.wxss */
+.search-page {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  box-sizing: border-box;
+}
+
+/* 顶部导航栏 */
+.nav-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+  z-index: 100;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.back-btn {
+  font-size: 36rpx;
+  padding: 10rpx 16rpx 10rpx 0;
+  color: #374151;
+}
+
+.search-input-box {
+  flex: 1;
+  height: 68rpx;
+  background-color: #f3f4f6;
+  border-radius: 34rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+  margin-right: 120rpx; /* 避开胶囊按钮 */
+}
+
+.search-icon {
+  font-size: 26rpx;
+  color: #9ca3af;
+  margin-right: 12rpx;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 26rpx;
+  color: #1f2937;
+}
+
+.clear-icon, .scan-icon {
+  font-size: 28rpx;
+  color: #6b7280;
+  padding: 0 8rpx;
+}
+
+/* 搜索历史与快捷区 */
+.search-default-view {
+  padding: 32rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.clear-history-btn {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+.tag-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 40rpx;
+}
+
+.tag-item {
+  padding: 12rpx 24rpx;
+  background-color: #ffffff;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 28rpx;
+  font-size: 24rpx;
+  color: #4b5563;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.category-card {
+  background: #ffffff;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.cat-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8rpx;
+}
+
+.cat-sub {
+  font-size: 20rpx;
+  color: #9ca3af;
+}
+
+/* Tab 切换 */
+.tabs {
+  display: flex;
+  background: #ffffff;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 26rpx;
+  color: #6b7280;
+}
+
+.tab-item.active {
+  color: #2563eb;
+  font-weight: 600;
+  border-bottom: 4rpx solid #2563eb;
+}
+
+/* 结果列表 */
+.result-list {
+  padding: 24rpx;
+  height: calc(100vh - 200rpx);
+}
+
+.result-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.card-type-tag {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 6rpx;
+}
+
+.card-type-tag.stock { background: #dbeafe; color: #1e40af; }
+.card-type-tag.order { background: #dcfce7; color: #166534; }
+
+.card-status {
+  font-size: 22rpx;
+  color: #6b7280;
+}
+
+.card-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #111827;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.card-sub-info {
+  font-size: 22rpx;
+  color: #6b7280;
+  display: block;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16rpx;
+  padding-top: 12rpx;
+  border-top: 1rpx dashed #f3f4f6;
+}
+
+.price-text {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #ef4444;
+}
+
+.date-text {
+  font-size: 20rpx;
+  color: #9ca3af;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 120rpx;
+}
+
+.empty-icon { font-size: 80rpx; margin-bottom: 16rpx; }
+.empty-text { font-size: 26rpx; color: #9ca3af; margin-bottom: 40rpx; }
+
+.ai-ask-btn {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #ffffff;
+  font-size: 26rpx;
+  border-radius: 40rpx;
+  padding: 0 40rpx;
+}

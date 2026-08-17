@@ -3,13 +3,26 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "i18n:scan": "npx i18next-scanner --config i18next-scanner.config.js"
   },
   "keywords": [],
   "author": "",
-  "license": "",
-  "dependencies": {
-  },
+  "license": "ISC",
   "devDependencies": {
+    "i18next-scanner": "^4.6.0",
     "miniprogram-api-typings": "^2.8.3-1"
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NorthernLatitude40/miniprogram.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/NorthernLatitude40/miniprogram/issues"
+  },
+  "homepage": "https://github.com/NorthernLatitude40/miniprogram#readme",
+  "dependencies": {
+    "@miniprogram-i18n/core": "^1.0.0-rc.12"
   }
 }

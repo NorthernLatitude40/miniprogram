@@ -8,3 +8,46 @@ project.private.config.json   <-- ⚠️ 非常重要！这个文件里包含你
 .DS_Store
 Thumbs.db
 *.log
+
+# Node.js / NPM 依賴包
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 微信開發者工具生成檔與快取
+miniprogram_npm/
+.miniprogram/
+.plugin/
+
+# 微信開發者工具個人偏好配置（包含個人開發者 ID、界面佈局，避免覆蓋團隊其他人配置）
+project.private.config.json
+
+# TypeScript 編譯產物與快取
+*.tsbuildinfo
+typings/miniprogram/
+
+# 操作系統與編輯器產生文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE 配置文件
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 環境變量與私密配置文件
+.env
+.env.local
+.env.development.local
+.env.production.local

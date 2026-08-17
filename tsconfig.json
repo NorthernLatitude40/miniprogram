@@ -4,6 +4,7 @@
     "noImplicitAny": true,
     "module": "CommonJS",
     "target": "es2018",
+    "resolveJsonModule": true,
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -24,7 +25,7 @@
   },
   "include": [
     "./**/*.ts"
-  ],
+, "miniprogram/utils/i18n/locales/ja.json.js", "miniprogram/utils/i18n/locales/en.json.js", "miniprogram/utils/i18n/locales/zh_HK.json.js", "miniprogram/utils/i18n/locales/zh_CN.json.js"  ],
   "exclude": [
     "node_modules"
   ]

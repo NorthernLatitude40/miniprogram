@@ -1,5 +1,13 @@
 import { request } from './request';
 
+// ==================== 接口定义 ====================
+export interface TrendItem {
+  date: string;
+  income: number;
+  expense: number;
+  profit: number;
+}
+
 export interface UserInfo {
   id?: number;
   nickname: string;
@@ -12,6 +20,29 @@ export interface UserInfo {
   avatar_url?: string;
   [key: string]: any;
 }
+
+export interface DashboardOverviewData {
+  profit: number;
+  income: number;
+  expense: number;
+  order_count: number;
+  in_stock_devices: int | number;
+  today_profit?: number;
+  today_income?: number;
+  today_expense?: number;
+  [key: string]: any;
+}
+
+export interface DashboardStatsResult {
+  profit: number;
+  income: number;
+  expense: number;
+  orderCount: number;
+  stockCount: number;
+  trend: TrendItem[];
+}
+
+// ==================== API 请求函数 ====================
 
 /**
  * 统一获取并更新个人信息
@@ -29,7 +60,7 @@ export function fetchUserInfo(): Promise<UserInfo> {
     },
   }).then((res: any) => {
     const d = res?.data || res || {};
-    
+
     // 保持后端原始字段 (id, shop_id, role) 并补充前端 UI 常用字段
     const userInfo: UserInfo = {
       ...d,
@@ -57,4 +88,50 @@ export function fetchUserInfo(): Promise<UserInfo> {
     console.error('获取用户信息失败:', err);
     throw err;
   });
+}
+
+/**
+ * 获取首页概览与报表数据
+ * @param range 时间维度: 'today' | '7days' | 'month'，默认 'today'
+ */
+export function fetchDashboardStats(range: string = 'today'): Promise<DashboardStatsResult> {
+  const currentShopId = wx.getStorageSync('current_shop_id') || '';
+
+  return request<DashboardOverviewData>({
+    url: '/api/v1/dashboard/overview',
+    method: 'GET',
+    data: { range },
+    header: {
+      'X-Shop-Id': String(currentShopId),
+    }
+  })
+    .then((data: any) => {
+      const d = data?.data || data || {};
+
+      // 优先使用后端扩展的通用字段 (profit, income, expense, order_count)，降级兼容旧版的 today_* 字段
+      const stats: DashboardStatsResult = {
+        profit: d.profit ?? d.today_profit ?? 0,
+        income: d.income ?? d.today_income ?? 0,
+        expense: d.expense ?? d.today_expense ?? 0,
+        orderCount: d.order_count ?? 0,
+        stockCount: d.in_stock_devices ?? 0,
+        trend: Array.isArray(d.trend) ? d.trend : [], // 👈 正确保留并传出后端返回的 trend 数组
+      };
+
+      return stats;
+    })
+    .catch((err: any) => {
+      console.error('获取看板数据失败:', err);
+      if (err?.status === 403) {
+        wx.showToast({
+          title: err.detail || '无权查看财务概览',
+          icon: 'none'
+        });
+      } else if (err?.detail) {
+        wx.showToast({ title: err.detail, icon: 'none' });
+      } else {
+        wx.showToast({ title: '获取概览数据失败', icon: 'none' });
+      }
+      throw err;
+    });
 }

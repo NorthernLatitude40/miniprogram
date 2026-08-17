@@ -10,14 +10,14 @@ page {
   box-sizing: border-box;
 }
 
-/* 导航栏顶层容器 */
+/* 導航欄頂層容器 */
 .custom-nav-bar {
   position: relative;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* 返回按钮绝对定位在左侧 */
+/* 返回按鈕絕對定位在左側 */
 .back-btn {
   position: absolute;
   left: 0;
@@ -28,13 +28,17 @@ page {
   z-index: 100;
 }
 
+.back-btn:active {
+  opacity: 0.6;
+}
+
 .back-icon {
   font-size: 52rpx;
   color: #333333;
   font-weight: 400;
 }
 
-/* 标题居中 */
+/* 標題居中 */
 .nav-title {
   position: absolute;
   left: 0;
@@ -44,10 +48,10 @@ page {
   font-size: 34rpx;
   font-weight: bold;
   color: #333333;
-  pointer-events: none; /* 防止遮挡点击事件 */
+  pointer-events: none; /* 防止遮擋點擊事件 */
 }
 
-/* 蓝色 Header 卡片 */
+/* 藍色 Header 卡片 */
 .header-card {
   width: 100%;
   box-sizing: border-box;
@@ -60,6 +64,11 @@ page {
   margin-top: 20rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 6rpx 16rpx rgba(41, 121, 255, 0.25);
+  transition: opacity 0.2s ease;
+}
+
+.header-card:active {
+  opacity: 0.9;
 }
 
 .avatar-box {
@@ -86,7 +95,6 @@ page {
 .title-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8rpx;
 }
 
 .role-name {
@@ -116,7 +124,7 @@ page {
   margin-left: 8rpx;
 }
 
-/* 通用白色圆角卡片 */
+/* 通用白色圓角卡片 */
 .section-card {
   width: 100%;
   box-sizing: border-box;
@@ -131,6 +139,23 @@ page {
   align-items: center;
   justify-content: space-between;
   height: 120rpx;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+/* 卡片內多個選單項之間的底部分割線 */
+.menu-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 60rpx;
+  height: 1rpx;
+  background-color: #f0f0f0;
+}
+
+.menu-row:active {
+  background-color: #f9f9f9;
 }
 
 .row-left {
@@ -141,6 +166,12 @@ page {
 .row-icon {
   font-size: 40rpx;
   margin-right: 20rpx;
+  line-height: 1;
+}
+
+.row-text-group {
+  display: flex;
+  flex-direction: column;
 }
 
 .row-title {
@@ -155,12 +186,8 @@ page {
   margin-top: 6rpx;
 }
 
-.row-text-group {
-  display: flex;
-  flex-direction: column;
-}
-
 .arrow-right {
   font-size: 36rpx;
   color: #cccccc;
+  line-height: 1;
 }

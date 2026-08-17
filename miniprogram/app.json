@@ -9,7 +9,9 @@
     "pages/staff/index",
     "pages/shop-edit/index",
     "pages/invite-accept/index",
-    "pages/staff-detail/index"
+    "pages/staff-detail/index",
+    "pages/business/index",
+    "pages/search/index"
   ],
   "networkTimeout": {
     "request": 120000,

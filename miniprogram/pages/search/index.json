@@ -1,5 +1,5 @@
 {
+  "navigationBarTitleText": "全局搜索",
   "navigationStyle": "custom",
-  "component": true,
   "usingComponents": {}
 }

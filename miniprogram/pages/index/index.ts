@@ -1,7 +1,9 @@
 // pages/index/index.ts
 import { request } from '../../utils/request';
+import { fetchDashboardStats } from '../../utils/user';
+import { i18nBehavior } from '../../utils/i18n/i18n';
 
-// 1. 在库设备条目接口 (扩充 UI 展字段)
+// 1. 在庫設備條目接口 (擴充 UI 展示欄位)
 interface StockItem {
   id: number | string;
   model: string;
@@ -21,7 +23,7 @@ interface ReportData {
   sales_count: number;
 }
 
-// 2. 解析出的卡片数据接口 (增加代词拦截字段)
+// 2. 解析出的卡片數據接口 (增加代詞攔截欄位)
 interface ParsedDeviceData {
   type?: 'in' | 'out';
   action?: 'in' | 'sell' | 'query_stock' | 'query_report' | 'universal_query';
@@ -38,7 +40,7 @@ interface ParsedDeviceData {
   keyword?: string;
   total_count?: number;
   items?: StockItem[];
-  // 代词防呆扩展字段
+  // 代詞防呆擴展欄位
   is_pronoun?: boolean;
   selected_device?: StockItem | null;
 }
@@ -62,15 +64,9 @@ interface AgentApiResponse {
   parsedData?: ParsedDeviceData;
 }
 
-interface DashboardOverviewData {
-  today_profit: number;
-  today_income: number;
-  today_expense: number;
-  in_stock_devices: number;
-}
-
-// 3. 页面 Data 接口
+// 3. 頁面 Data 接口
 interface PageData {
+  shopName: string;
   userRole: string;
   navHeight: number;
   stats: ShopStats;
@@ -79,27 +75,35 @@ interface PageData {
   lastMsgId: string;
   messages: ChatMessage[];
   stockList: StockItem[];
+  statusBarHeight?: number;
+  menuTop?: number;
+  menuHeight?: number;
+  navBarHeight?: number;
 }
 
-// 4. 页面 CustomMethods 接口 (补齐所有自定义函数类型)
+// 4. 頁面 CustomMethods 接口
 interface PageCustomMethods {
   toggleMenu: () => void;
   onInput: (e: WechatMiniprogram.Input) => void;
-  sendToAgent: (overrideText?: string) => void; // 🌟 支持传入外部文本参数
+  sendToAgent: (overrideText?: string) => void;
   confirmAdd: (e: WechatMiniprogram.CustomEvent) => void;
   confirmSell: (e: WechatMiniprogram.CustomEvent) => void;
-  fetchDashboardStats: () => void;
   checkUserShopStatus: () => void;
   goToMy: () => void;
   fetchStockList: () => void;
   parseRobotMessage: (robotMsg: ChatMessage) => ChatMessage;
   onSelectStockDevice: (e: WechatMiniprogram.CustomEvent) => void;
-  // 🌟 补充新方法类型声明
   showDevicePicker: (candidates: Array<any>) => void;
   onSelectDeviceClarify: (selectedDevice: any) => void;
+  goToBusinessPage: () => void;
+  // 多語言 Behavior 方法
+  getLanguage: () => string;
+  setLanguage: (lang: string) => void;
+  updateLanguage: () => void;
+  tFormat: (key: any, params?: Record<string, string>) => string;
 }
 
-// 🌟 核心修复：定义为动态 Getter 函数，避免顶层静态变量无法更新缓存的问题
+// 核心修復：定義為動態 Getter 函數，避免頂層靜態變量無法更新快取的問題
 const getCurrentShopId = (): string | number => {
   return wx.getStorageSync('shop_id') || wx.getStorageSync('current_shop_id') || 1;
 };
@@ -109,7 +113,10 @@ const getCurrentUserRole = (): string => {
 };
 
 Page<PageData, PageCustomMethods>({
+  behaviors: [i18nBehavior],
+
   data: {
+    shopName: 'ONTO 品牌旗艦店',
     userRole: 'staff',
     navHeight: 88,
     stats: {
@@ -121,22 +128,31 @@ Page<PageData, PageCustomMethods>({
     showMenu: false,
     inputMsg: '',
     lastMsgId: '',
-    messages: [
-      {
-        role: 'assistant',
-        content: '你好！我是你的手机店 AI 智能管家。你可以跟我说：“收了一台 iPhone 13 成本 1800” 或 “查一下库存/今天赚了多少钱”。',
-      },
-    ],
+    messages: [],
     stockList: [],
   },
 
   onLoad() {
+    // 獲取系統狀態欄高度
+    const sysInfo = wx.getSystemInfoSync();
+    const statusBarHeight = sysInfo.statusBarHeight || 20;
+
+    // 獲取膠囊按鈕位置
     const menuButton = wx.getMenuButtonBoundingClientRect();
-    if (menuButton && menuButton.bottom) {
-      this.setData({
-        navHeight: menuButton.bottom + 8
-      });
-    }
+    const menuTop = menuButton.top || statusBarHeight + 6;
+    const menuHeight = menuButton.height || 32;
+
+    // 計算導航欄總高度（避讓佔位用）
+    const navBarHeight = menuButton.bottom ? (menuButton.bottom + (menuTop - statusBarHeight)) : (statusBarHeight + 44);
+
+    this.setData({
+      statusBarHeight: statusBarHeight,
+      menuTop: menuTop,
+      menuHeight: menuHeight,
+      navBarHeight: navBarHeight,
+      navHeight: menuButton.bottom ? menuButton.bottom + 8 : 88
+    });
+
     const token = wx.getStorageSync('token');
     if (token) {
       this.fetchStockList();
@@ -144,8 +160,22 @@ Page<PageData, PageCustomMethods>({
   },
 
   onShow() {
-    const token = wx.getStorageSync('token');
+    // 1. 自動刷新多語言數據
+    this.updateLanguage();
 
+    // 2. 若消息列表為空，初始化歡迎語（支持多語言）
+    if (!this.data.messages || this.data.messages.length === 0) {
+      this.setData({
+        messages: [
+          {
+            role: 'assistant',
+            content: (this.data as any).t?.welcome_chat_tip || '你好！我是你的手機店 AI 智能管家。你可以跟我說：“收了一台 iPhone 13 成本 1800” 或 “查一下庫存/今天賺了多少錢”。',
+          },
+        ]
+      });
+    }
+
+    const token = wx.getStorageSync('token');
     if (!token) {
       wx.redirectTo({
         url: '/pages/login/login'
@@ -159,7 +189,7 @@ Page<PageData, PageCustomMethods>({
     this.checkUserShopStatus();
 
     if (role === 'admin' || role === 'manager' || role === 'owner') {
-      this.fetchDashboardStats();
+      fetchDashboardStats();
     }
   },
 
@@ -174,28 +204,29 @@ Page<PageData, PageCustomMethods>({
     })
       .then((resData) => {
         if (resData && resData.items) {
+          const costText = (this.data as any).t?.cost || '成本';
           const formattedList: StockItem[] = resData.items.map((item) => ({
             ...item,
-            display_name: `${item.title || item.model} ${item.spec ? '(' + item.spec + ')' : ''} - 成本￥${item.purchase_price || item.cost || 0}`
+            display_name: `${item.title || item.model} ${item.spec ? '(' + item.spec + ')' : ''} - ${costText}￥${item.purchase_price || item.cost || 0}`
           }));
           this.setData({ stockList: formattedList });
         }
       })
       .catch((err) => {
-        console.error('获取库存列表失败:', err);
+        console.error('獲取庫存列表失敗:', err);
       });
   },
 
   parseRobotMessage(robotMsg: ChatMessage): ChatMessage {
-    const pronounBlacklist = ["刚才这台", "刚才那台", "上一台", "这台", "这个", "那台", "那个", "把它", "它", "上一台手机", "刚才这台机器", "UNKNOWN"];
-    
+    const pronounBlacklist = ["剛才這台", "剛才那台", "上一台", "這台", "這個", "那台", "那個", "把它", "它", "上一台手機", "剛才這台機器", "UNKNOWN"];
+
     if (robotMsg.parsedData) {
       const rawModel = robotMsg.parsedData.model || robotMsg.parsedData.model_or_id || "";
-      
+
       if (pronounBlacklist.includes(rawModel.trim())) {
         robotMsg.parsedData.is_pronoun = true;
         robotMsg.parsedData.selected_device = null;
-        
+
         if (this.data.stockList.length === 1) {
           robotMsg.parsedData.selected_device = this.data.stockList[0];
           robotMsg.parsedData.model = this.data.stockList[0].title || this.data.stockList[0].model;
@@ -225,7 +256,7 @@ Page<PageData, PageCustomMethods>({
       });
 
       wx.showToast({
-        title: '已关联设备',
+        title: (this.data as any).t?.device_linked || '已關聯設備',
         icon: 'success'
       });
     }
@@ -243,36 +274,7 @@ Page<PageData, PageCustomMethods>({
         }
       })
       .catch((err: any) => {
-        console.error('获取店铺状态失败:', err);
-      });
-  },
-
-  fetchDashboardStats() {
-    request<DashboardOverviewData>({
-      url: '/api/v1/dashboard/overview',
-      method: 'GET'
-    })
-      .then((data) => {
-        if (data) {
-          this.setData({
-            stats: {
-              profit: data.today_profit,
-              income: data.today_income,
-              expense: data.today_expense,
-              stockCount: data.in_stock_devices,
-            },
-          });
-        }
-      })
-      .catch((err: any) => {
-        if (err?.status === 403) {
-          wx.showToast({
-            title: err.detail || '无权查看财务概览',
-            icon: 'none'
-          });
-        } else if (err?.detail) {
-          wx.showToast({ title: err.detail, icon: 'none' });
-        }
+        console.error('獲取店鋪狀態失敗:', err);
       });
   },
 
@@ -284,27 +286,31 @@ Page<PageData, PageCustomMethods>({
     this.setData({ inputMsg: e.detail.value });
   },
 
-  // 🌟 1. 多设备选择器 ActionSheet
+  // 多設備選擇器 ActionSheet
   showDevicePicker(candidates: Array<any>) {
     if (!candidates || candidates.length === 0) return;
 
+    const costLabel = (this.data as any).t?.cost || '成本';
+    const unknownSpec = (this.data as any).t?.unknown_spec || '規格未知';
+    const unnamedDevice = (this.data as any).t?.unnamed_device || '未命名設備';
+
     const itemList = candidates.map((item) => {
       const id = item.id;
-      const name = item.title || item.model || '未命名设备';
-      const spec = item.color || item.spec || '规格未知';
-      const cost = item.cost ? ` | 成本:¥${item.cost}` : '';
+      const name = item.title || item.model || unnamedDevice;
+      const spec = item.color || item.spec || unknownSpec;
+      const cost = item.cost ? ` | ${costLabel}:¥${item.cost}` : '';
       return `[ID:${id}] ${name} (${spec}${cost})`;
     });
 
     wx.showActionSheet({
-      title: '⚠️ 匹配到多台符合条件的设备，请选择：',
+      title: (this.data as any).t?.multiple_devices_found || '⚠️ 匹配到多台符合條件的設備，請選擇：',
       itemList: itemList,
       success: (res) => {
         const selectedIndex = res.tapIndex;
         const selectedDevice = candidates[selectedIndex];
 
         wx.showToast({
-          title: `已选择 ID: ${selectedDevice.id}`,
+          title: `ID: ${selectedDevice.id}`,
           icon: 'success',
           duration: 1500
         });
@@ -313,22 +319,22 @@ Page<PageData, PageCustomMethods>({
       },
       fail: (err) => {
         if (err.errMsg.indexOf('cancel') === -1) {
-          console.error('ActionSheet 调起失败:', err);
+          console.error('ActionSheet 調起失敗:', err);
         }
       }
     });
   },
 
-  // 🌟 2. 澄清后的自动发送逻辑
+  // 澄清後的自動發送邏輯
   onSelectDeviceClarify(selectedDevice: any) {
-    const clarifyText = `选 ID ${selectedDevice.id} 这台`;
+    const clarifyText = this.tFormat('select_device_clarify', { id: selectedDevice.id }) || `選 ID ${selectedDevice.id} 這台`;
     this.sendToAgent(clarifyText);
   },
 
-  // 🌟 3. 发送消息逻辑（支持传入 overrideText 覆盖 inputMsg）
+  // 發送消息邏輯（支持傳入 overrideText 覆蓋 inputMsg）
   sendToAgent(overrideText?: any) {
     let rawInput = '';
-    
+
     if (typeof overrideText === 'string') {
       rawInput = overrideText;
     } else {
@@ -347,12 +353,12 @@ Page<PageData, PageCustomMethods>({
 
     this.setData({
       messages: messagesWithUser,
-      inputMsg: isOverride ? this.data.inputMsg : '', 
+      inputMsg: isOverride ? this.data.inputMsg : '',
       lastMsgId: `msg-${messagesWithUser.length - 1}`,
     });
 
     wx.showLoading({
-      title: 'AI 思考/处理中...',
+      title: (this.data as any).t?.ai_thinking || 'AI 思考/處理中...',
       mask: true
     });
 
@@ -372,12 +378,12 @@ Page<PageData, PageCustomMethods>({
       }
     })
       .then((resData: any) => {
-        // RFC 7807 拦截逻辑
+        // RFC 7807 攔截邏輯
         const problem = resData?.type ? resData : (resData?.parsedData?.type?.startsWith('urn:error:') ? resData.parsedData : null);
 
         if (problem && (problem.status >= 400 || problem.type?.startsWith('urn:error:'))) {
           const errorType = problem.type;
-          const detailMsg = problem.detail || '请求处理异常';
+          const detailMsg = problem.detail || (this.data as any).t?.request_failed || '請求處理異常';
           const candidates = problem.extensions?.candidates || problem.candidates || [];
 
           if (errorType === 'urn:error:multiple-devices-found') {
@@ -408,8 +414,9 @@ Page<PageData, PageCustomMethods>({
           return;
         }
 
-        // 正常业务路径
-        let rawReply = resData?.reply || '已收到指令';
+        // 正常業務路徑
+        const defaultReceivedText = (this.data as any).t?.received_command || '已收到指令';
+        let rawReply = resData?.reply || defaultReceivedText;
         let parsedData: ParsedDeviceData | null = resData?.parsedData || null;
 
         if (typeof rawReply === 'string') {
@@ -425,13 +432,13 @@ Page<PageData, PageCustomMethods>({
 
         let reply = '';
         if (Array.isArray(rawReply) && rawReply.length > 0) {
-          reply = rawReply[0].text || rawReply[0].content || '已收到指令';
+          reply = rawReply[0].text || rawReply[0].content || defaultReceivedText;
         } else if (typeof rawReply === 'string') {
           reply = rawReply;
         } else if (typeof rawReply === 'object' && rawReply !== null) {
           reply = (rawReply as any).text || (rawReply as any).content || JSON.stringify(rawReply);
         } else {
-          reply = '已收到指令';
+          reply = defaultReceivedText;
         }
 
         let assistantMsg: ChatMessage = { role: 'assistant', content: reply, parsedData };
@@ -445,16 +452,16 @@ Page<PageData, PageCustomMethods>({
         });
 
         if (currentRole === 'admin' || currentRole === 'manager') {
-          this.fetchDashboardStats();
+          fetchDashboardStats();
         }
       })
       .catch((err) => {
         let mockMsg: ChatMessage = {
           role: 'assistant',
-          content: '【调试提示】Python 后端未连接。若接通，系统将自动识别并生成卡片。',
-          parsedData: { type: 'in', action: 'in', model: 'iPhone 13 (演示数据)', cost: 1800, notes: '自动提取测试' },
+          content: (this.data as any).t?.debug_tip || '【調試提示】Python 後端未連接。若接通，系統將自動識別並生成卡片。',
+          parsedData: { type: 'in', action: 'in', model: 'iPhone 13 (演示數據)', cost: 1800, notes: '自動提取測試' },
         };
-        
+
         mockMsg = this.parseRobotMessage(mockMsg);
 
         const finalMessages = [...messagesWithUser, mockMsg];
@@ -473,7 +480,7 @@ Page<PageData, PageCustomMethods>({
     wx.navigateTo({
       url: '/pages/my/index',
       fail: (err: WechatMiniprogram.GeneralCallbackResult) => {
-        console.error('跳转到“我的”页面失败：', err);
+        console.error('跳轉到“我的”頁面失敗：', err);
       }
     });
   },
@@ -495,36 +502,38 @@ Page<PageData, PageCustomMethods>({
         }
       })
         .then(() => {
-          wx.showToast({ title: `成功入库: ${info.model || '设备'}`, icon: 'success' });
+          const successMsg = this.tFormat('stock_in_success', { model: info.model || (this.data as any).t?.device || '設備' });
+          wx.showToast({ title: successMsg, icon: 'success' });
+
           if (typeof index === 'number') {
             this.setData({
               [`messages[${index}].isConfirmed`]: true
             });
           }
-          
+
           this.fetchStockList();
 
           const currentRole = getCurrentUserRole();
           if (currentRole === 'admin' || currentRole === 'manager') {
-            this.fetchDashboardStats();
+            fetchDashboardStats();
           }
         })
         .catch((err: any) => {
-          wx.showToast({ title: err?.detail || '入库失败，请重试', icon: 'none' });
+          wx.showToast({ title: err?.detail || (this.data as any).t?.stock_in_failed || '入庫失敗，請重試', icon: 'none' });
         });
     }
   },
 
   confirmSell(e: WechatMiniprogram.CustomEvent) {
     const { info, index } = e.currentTarget.dataset as { info: ParsedDeviceData; index: number };
-    
+
     if (typeof index === 'number' && this.data.messages[index]?.isConfirmed) {
       return;
     }
 
     if (info?.is_pronoun && !info.selected_device) {
       wx.showToast({
-        title: '请先选择关联的库存设备',
+        title: (this.data as any).t?.select_stock_device_first || '請先選擇關聯的庫存設備',
         icon: 'none'
       });
       return;
@@ -541,11 +550,13 @@ Page<PageData, PageCustomMethods>({
           model: finalModel,
           sn_code: finalSnCode,
           price: info.price || info.sell_price || 0,
-          notes: info.notes || '二手销售'
+          notes: info.notes || '二手銷售'
         }
       })
         .then(() => {
-          wx.showToast({ title: `成功出售: ${finalModel || '设备'}`, icon: 'success' });
+          const successMsg = this.tFormat('sell_success', { model: finalModel || (this.data as any).t?.device || '設備' });
+          wx.showToast({ title: successMsg, icon: 'success' });
+
           if (typeof index === 'number') {
             this.setData({
               [`messages[${index}].isConfirmed`]: true
@@ -556,12 +567,18 @@ Page<PageData, PageCustomMethods>({
 
           const currentRole = getCurrentUserRole();
           if (currentRole === 'admin' || currentRole === 'manager') {
-            this.fetchDashboardStats();
+            fetchDashboardStats();
           }
         })
         .catch((err: any) => {
-          wx.showToast({ title: err?.detail || '出售失败', icon: 'none' });
+          wx.showToast({ title: err?.detail || (this.data as any).t?.sell_failed || '出售失敗', icon: 'none' });
         });
     }
+  },
+
+  goToBusinessPage() {
+    wx.navigateTo({
+      url: '/pages/business/index'
+    });
   },
 });

@@ -1,0 +1,134 @@
+<!-- pages/business/index.wxml -->
+<view class="business-container">
+
+<!-- 1. 固定頂部的自定義導覽列 -->
+<view class="custom-nav-header">
+  <view style="height: {{statusBarHeight}}px;"></view>
+  <view class="nav-title-bar" style="height: {{menuHeight}}px;">
+    <text class="nav-shop-name">{{shopName}}</text>
+  </view>
+</view>
+
+<!-- 2. 頁面內容避讓占位塊 -->
+<view style="height: {{navBarHeight}}px; width: 100%; flex-shrink: 0;"></view>
+
+<!-- 3. 頂部 AI 快捷入口 -->
+<view class="header-section">
+  <view class="ai-entry-card" bindtap="backToAI">
+    <view class="ai-entry-left">
+      <text class="ai-avatar">🤖</text>
+      <view class="ai-text-group">
+        <text class="ai-title">{{t.ai_housekeeper_title || 'ONTO 手机店 AI 管家'}}</text>
+        <text class="ai-sub">{{t.ai_back_to_chat || '点击返回自然语言对话开单'}}</text>
+      </view>
+    </view>
+    <text class="arrow-right">{{t.back_to_chat_btn || '返回对话 ❯'}}</text>
+  </view>
+</view>
+
+<!-- 4. 全局快捷搜尋框 -->
+<view class="search-section" bindtap="goToSearch">
+  <view class="search-bar">
+    <text class="search-icon">🔍</text>
+    <input 
+      class="search-input" 
+      placeholder="{{t.search_placeholder || '搜索 IMEI 串号 / 机型 / 客户手机号 / 订单号'}}" 
+      disabled
+    />
+    <text class="scan-icon" catchtap="scanIMEI">📷</text>
+  </view>
+</view>
+
+<!-- 5. 經營收支報表看板 -->
+<view class="card report-dashboard-card">
+  <view class="report-header">
+    <text class="card-title">{{t.operating_statement || '经营收支报表'}}</text>
+    <picker mode="selector" range="{{timeRangeOptions}}" value="{{selectedTimeIndex}}" bindchange="onTimeRangeChange">
+      <view class="time-select-btn">
+        <text>{{timeRangeOptions[selectedTimeIndex]}}</text>
+        <text class="arrow-down">▼</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 4 大核心指標網格 -->
+  <view class="stats-grid">
+    <view class="stat-item">
+      <text class="stat-label">{{stats.profitLabel}}</text>
+      <text class="stat-value profit">¥ {{stats.profit || 0}}</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-label">{{stats.incomeLabel}}</text>
+      <text class="stat-value">¥ {{stats.income || 0}}</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-label">{{stats.expenseLabel}}</text>
+      <text class="stat-value">¥ {{stats.expense || 0}}</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-label">{{stats.orderCountLabel}}</text>
+      <text class="stat-value count">{{stats.orderCount || 0}} {{t.unit_orders || '单'}}</text>
+    </view>
+  </view>
+
+  <!-- 趨勢圖表區 -->
+  <view class="chart-container">
+    <view class="chart-title-bar">
+      <text class="chart-sub-title">{{t.income_profit_trend || '收支与毛利趋势'}}</text>
+      <text class="chart-unit">{{t.unit_yuan || '单位：元'}}</text>
+    </view>
+    <view class="chart-wrapper">
+      <ec-canvas 
+        id="dashboard-chart-canvas" 
+        canvas-id="dashboard-chart" 
+        ec="{{ ec }}"
+      ></ec-canvas>
+    </view>
+  </view>
+</view>
+
+<!-- 6. 核心功能網格 -->
+<view class="section-title">{{t.core_functions || '核心功能'}}</view>
+<view class="function-grid">
+  <view class="grid-card purchase" bindtap="goToPurchase">
+    <view class="card-icon">📦</view>
+    <view class="card-info">
+      <text class="card-name">{{t.purchase_mgmt || '进货管理'}}</text>
+      <text class="card-desc">{{t.purchase_mgmt_desc || '设备入库/串号可查'}}</text>
+    </view>
+  </view>
+
+  <view class="grid-card sales" bindtap="goToSales">
+    <view class="card-icon">💰</view>
+    <view class="card-info">
+      <text class="card-name">{{t.sales_mgmt || '销售管理'}}</text>
+      <text class="card-desc">{{t.sales_mgmt_desc || '设备出库/客户录入'}}</text>
+    </view>
+  </view>
+
+  <view class="grid-card stock-new" bindtap="goToNewStock">
+    <view class="card-icon">📱</view>
+    <view class="card-info">
+      <text class="card-name">{{t.new_device_stock || '新机库存'}}</text>
+      <text class="card-desc">{{t.new_stock_desc || '成本与库龄监控'}}</text>
+    </view>
+  </view>
+
+  <view class="grid-card stock-used" bindtap="goToUsedStock">
+    <view class="card-icon">🔄</view>
+    <view class="card-info">
+      <text class="card-name">{{t.secondhand_stock || '二手库存'}}</text>
+      <text class="card-desc">{{t.used_stock_desc || '回收机型/明细'}}</text>
+    </view>
+  </view>
+
+  <view class="grid-card profile" bindtap="goToMy">
+    <view class="card-icon">👤</view>
+    <view class="card-info">
+      <text class="card-name">{{t.my_center || '我的中心1'}}</text>
+      <text class="card-desc">{{t.my_center_desc || '账号/员工/店铺设置'}}</text>
+    </view>
+  </view>
+</view>
+
+</view>

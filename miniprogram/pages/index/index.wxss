@@ -24,6 +24,52 @@ page {
   flex-shrink: 0;
 }
 
+/* 🌟 ==================== 新增：切换至核心业务版按钮样式 ==================== */
+.layout-switch-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border: 1rpx solid #c7d2fe;
+  padding: 16rpx 24rpx;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(99, 102, 241, 0.08);
+  transition: all 0.2s ease;
+}
+
+.layout-switch-btn:active {
+  opacity: 0.85;
+  transform: scale(0.99);
+}
+
+.switch-btn-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.switch-icon {
+  font-size: 32rpx;
+}
+
+.switch-text {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #3730a3;
+}
+
+.switch-arrow {
+  font-size: 22rpx;
+  font-weight: bold;
+  color: #4f46e5;
+  background: #ffffff;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+/* 🌟 ====================================================================== */
+
 /* 看板卡片 */
 .card {
   background: #ffffff;
@@ -333,7 +379,6 @@ button[disabled].confirm-btn {
   margin-bottom: 12rpx;
 }
 
-
 /* ==================== 🌟 店员视角：超可爱卡通 Banner ==================== */
 .no-perm-banner {
   display: flex;
@@ -401,7 +446,6 @@ button[disabled].confirm-btn {
   align-items: center;            /* 垂直居中对齐 */
   margin-bottom: 20rpx;           /* 保持与下方内容的间距 */
 }
-
 
 /* 警告标签 */
 .warn-badge {
@@ -479,4 +523,37 @@ button[disabled].confirm-btn {
 .item-label {
   color: #666666;
   font-size: 28rpx;
+}
+
+/* 自定义顶部导航 Header 样式 */
+.custom-nav-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f4f5f7;
+  z-index: 999;
+  box-sizing: border-box;
+}
+
+/* 🌟 与胶囊同一行的标题栏 */
+.nav-title-bar {
+  display: flex;
+  align-items: center;    /* 垂直居中 */
+  justify-content: center; /* 水平居中 */
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 🌟 店铺名称样式 */
+.nav-shop-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #1f2937;
+  max-width: 50%;          /* 限制最大宽度，避免撞到胶囊 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
 }

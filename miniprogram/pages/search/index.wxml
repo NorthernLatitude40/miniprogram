@@ -1,0 +1,119 @@
+<!-- pages/search/index.wxml -->
+<view class="search-page" style="padding-top: {{ navBarHeight }}px;">
+  <!-- 顶部自定义导航栏与搜索框 -->
+  <view class="nav-header" style="height: {{ navBarHeight }}px; padding-top: {{ statusBarHeight }}px;">
+    <view class="back-btn" bindtap="goBack">
+      <text class="icon-back">←</text>
+    </view>
+    <view class="search-input-box">
+      <text class="search-icon">🔍</text>
+      <input 
+        class="search-input" 
+        type="text" 
+        value="{{ keyword }}" 
+        placeholder="搜索 IMEI 串号/机型/客户手机号/订单号" 
+        focus="{{ true }}"
+        bindinput="onInput"
+        bindconfirm="onSearch"
+      />
+      <text class="clear-icon" wx:if="{{ keyword }}" bindtap="clearInput">✕</text>
+      <text class="scan-icon" bindtap="scanIMEI">📷</text>
+    </view>
+  </view>
+
+  <!-- 搜索历史与热门快捷标签（未输入关键词时展示） -->
+  <view class="search-default-view" wx:if="{{ !keyword && !isSearching }}">
+    <view class="history-section" wx:if="{{ historyList.length > 0 }}">
+      <view class="section-header">
+        <text class="section-title">搜索历史</text>
+        <text class="clear-history-btn" bindtap="clearHistory">清空</text>
+      </view>
+      <view class="tag-wrapper">
+        <view 
+          class="tag-item" 
+          wx:for="{{ historyList }}" 
+          wx:key="*this" 
+          data-keyword="{{ item }}" 
+          bindtap="onTagTap"
+        >
+          {{ item }}
+        </view>
+      </view>
+    </view>
+
+    <!-- 快捷分类卡片 -->
+    <view class="quick-category-section">
+      <text class="section-title">快捷检索类型</text>
+      <view class="category-grid">
+        <view class="category-card" data-type="stock" bindtap="onCategoryTap">
+          <text class="cat-title">📦 在库设备</text>
+          <text class="cat-sub">按 IMEI/机型精确查找</text>
+        </view>
+        <view class="category-card" data-type="order" bindtap="onCategoryTap">
+          <text class="cat-title">📜 销售与采购订单</text>
+          <text class="cat-sub">查订单号/客户关联</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 搜索结果列表 -->
+  <view class="search-result-view" wx:if="{{ keyword }}">
+    <!-- 搜结果 Tab 切换 -->
+    <view class="tabs">
+      <view 
+        class="tab-item {{ activeTab === 'all' ? 'active' : '' }}" 
+        data-tab="all" 
+        bindtap="switchTab"
+      >全部 ({{ totalCount }})</view>
+      <view 
+        class="tab-item {{ activeTab === 'stock' ? 'active' : '' }}" 
+        data-tab="stock" 
+        bindtap="switchTab"
+      >库存设备 ({{ stockResults.length }})</view>
+      <view 
+        class="tab-item {{ activeTab === 'order' ? 'active' : '' }}" 
+        data-tab="order" 
+        bindtap="switchTab"
+      >业务订单 ({{ orderResults.length }})</view>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading-state" wx:if="{{ isSearching }}">
+      <text>正在全力搜索中...</text>
+    </view>
+
+    <!-- 无结果空状态 -->
+    <view class="empty-state" wx:elif="{{ displayResults.length === 0 }}">
+      <text class="empty-icon">📂</text>
+      <text class="empty-text">未找到与“{{ keyword }}”匹配的结果</text>
+      <button class="ai-ask-btn" bindtap="askAIWithKeyword">🤖 试试让 AI 帮您检索分析</button>
+    </view>
+
+    <!-- 结果卡片列表 -->
+    <scroll-view class="result-list" scroll-y wx:else>
+      <view 
+        class="result-card" 
+        wx:for="{{ displayResults }}" 
+        wx:key="id" 
+        data-item="{{ item }}" 
+        bindtap="onResultItemTap"
+      >
+        <view class="card-header">
+          <text class="card-type-tag {{ item.type }}">{{ item.typeText }}</text>
+          <text class="card-status">{{ item.status }}</text>
+        </view>
+        <view class="card-body">
+          <text class="card-title">{{ item.title }}</text>
+          <text class="card-sub-info" wx:if="{{ item.imei }}">IMEI/串号: {{ item.imei }}</text>
+          <text class="card-sub-info" wx:if="{{ item.orderNo }}">订单号: {{ item.orderNo }}</text>
+          <text class="card-sub-info" wx:if="{{ item.customer }}">关联人员/客户: {{ item.customer }}</text>
+        </view>
+        <view class="card-footer">
+          <text class="price-text" wx:if="{{ item.price }}">¥ {{ item.price }}</text>
+          <text class="date-text">{{ item.date }}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>
