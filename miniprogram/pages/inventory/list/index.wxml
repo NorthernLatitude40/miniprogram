@@ -1,0 +1,115 @@
+<view class="page-container">
+  <!-- 自定義公共頂欄 -->
+  <nav-bar title="{{ lang.inventory_mgmt || '庫存管理' }}"></nav-bar>
+
+  <!-- 頂部搜尋與統計卡片 -->
+  <view class="section-card header-card">
+    <view class="search-box">
+      <input 
+        class="search-input" 
+        placeholder="{{ lang.inventory_search_placeholder || '搜尋機型/串號 (IMEI)' }}" 
+        value="{{ searchKeyword }}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearch"
+      />
+      <button class="search-btn" bindtap="scanToSearch">📷 掃碼</button>
+    </view>
+
+    <!-- 庫存數據概覽 -->
+    <view class="stat-row">
+      <view class="stat-item">
+        <text class="stat-num">{{ totalCount }}</text>
+        <text class="stat-label">在庫總數(台)</text>
+      </view>
+      <view class="stat-line"></view>
+      <view class="stat-item">
+        <text class="stat-num new-color">{{ newCount }}</text>
+        <text class="stat-label">新機</text>
+      </view>
+      <view class="stat-line"></view>
+      <view class="stat-item">
+        <text class="stat-num used-color">{{ usedCount }}</text>
+        <text class="stat-label">二手機</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 狀態 Tab 切換 -->
+  <view class="tab-header">
+    <view 
+      class="tab-item {{ activeTab === 'all' ? 'active' : '' }}" 
+      data-tab="all" 
+      bindtap="onTabChange"
+    >
+      <text>全部在庫</text>
+      <text class="sort-icon" wx:if="{{ activeTab === 'all' }}">
+        {{ ageSortOrder === 'desc' ? '↓' : '↑' }}
+      </text>
+    </view>
+    
+    <view 
+      class="tab-item {{ activeTab === 'new' ? 'active' : '' }}" 
+      data-tab="new" 
+      bindtap="onTabChange"
+    >
+      <text>新機</text>
+      <text class="sort-icon" wx:if="{{ activeTab === 'new' }}">
+        {{ ageSortOrder === 'desc' ? '↓' : '↑' }}
+      </text>
+    </view>
+    <view 
+      class="tab-item {{ activeTab === 'used' ? 'active' : '' }}" 
+      data-tab="used" 
+      bindtap="onTabChange"
+    >
+      <text>二手機</text>
+      <text class="sort-icon" wx:if="{{ activeTab === 'used' }}">
+        {{ ageSortOrder === 'desc' ? '↓' : '↑' }}
+      </text>
+    </view>
+  </view>
+
+  <!-- 庫存列表區 -->
+  <view class="inventory-list">
+    <block wx:if="{{ inventoryList.length > 0 }}">
+      <view 
+        class="section-card item-card" 
+        wx:for="{{ inventoryList }}" 
+        wx:key="id" 
+        data-id="{{ item.id }}" 
+        data-imei="{{ item.imei }}"
+        bindtap="goToDetail"
+      >
+        <view class="card-head">
+          <text class="model-title">{{ item.modelName }}</text>
+          <text class="badge {{ item.type }}">{{ item.type === 'new' ? '新機' : '二手機' }}</text>
+        </view>
+        <view class="card-body">
+          <view class="row">
+            <text class="label">串號 (IMEI)：</text>
+            <text class="val imei-code">{{ item.sn_code }}</text>
+          </view>
+          <view class="row">
+            <text class="label">進貨成本：</text>
+            <text class="val price">¥{{ item.costPrice }}</text>
+          </view>
+          <view class="row flex-between">
+            <view class="sub-row">
+              <text class="label">入庫時間：</text>
+              <text class="val">{{ item.inboundDate || item.in_stock_time || '-' }}</text>
+            </view>
+            <!-- 庫齡展示 -->
+            <view class="sub-row age-box" wx:if="{{ item.stock_age !== undefined }}">
+              <text class="label">庫齡：</text>
+              <text class="val age-tag {{ item.stock_age > 30 ? 'warning-age' : '' }}">
+                {{ item.stock_age }} 天
+              </text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <view wx:else class="empty-box">暫無在庫設備資料</view>
+  </view>
+</view>

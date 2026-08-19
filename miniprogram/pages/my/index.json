@@ -1,5 +1,8 @@
 {
+  "navigationBarTitleText": "我的",
   "navigationStyle": "custom",
   "component": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
 }

@@ -1,0 +1,55 @@
+<view class="page-container">
+  <nav-bar title="銷售單詳情"></nav-bar>
+
+  <!-- 狀態與基本資訊卡片 -->
+  <view class="section-card detail-card">
+    <view class="status-banner {{ order.status }}">
+      <text class="status-text">{{ order.status === 'completed' ? '已完成出庫' : '已辦理退貨' }}</text>
+    </view>
+    
+    <view class="info-list">
+      <view class="info-item">
+        <text class="label">銷售單號</text>
+        <text class="val">{{ order.id }}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">客戶資訊</text>
+        <text class="val">{{ order.customerName }} ({{ order.customerPhone }})</text>
+      </view>
+      <view class="info-item">
+        <text class="label">銷售台數</text>
+        <text class="val">{{ order.devices.length }} 台</text>
+      </view>
+      <view class="info-item">
+        <text class="label">銷售總額</text>
+        <text class="val price">¥{{ order.totalAmount }}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">出庫時間</text>
+        <text class="val">{{ order.createdAt }}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 售出設備明細卡片 -->
+  <view class="section-card detail-card">
+    <view class="card-title">售出設備明細</view>
+
+    <view class="device-item" wx:for="{{ order.devices }}" wx:key="imei">
+      <view class="device-info">
+        <text class="model-name">{{ item.modelName }}</text>
+        <text class="imei-code">IMEI: {{ item.imei }}</text>
+      </view>
+      <text class="price-text">¥{{ item.price }}</text>
+    </view>
+  </view>
+
+  <!-- 退貨 / 售後按鈕 -->
+  <button 
+    wx:if="{{ order.status === 'completed' }}" 
+    class="return-btn" 
+    bindtap="handleReturn"
+  >
+    辦理退貨
+  </button>
+</view>

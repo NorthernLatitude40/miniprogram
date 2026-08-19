@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "新建銷售單",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index",
+    "partner-select": "/components/partner-select/index"
+  }
+}

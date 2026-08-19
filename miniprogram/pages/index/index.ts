@@ -43,6 +43,9 @@ interface ParsedDeviceData {
   // 代詞防呆擴展欄位
   is_pronoun?: boolean;
   selected_device?: StockItem | null;
+  supplier_name?: string;
+  supplier_phone?: string;
+  product_type?: number
 }
 
 interface ChatMessage {
@@ -91,6 +94,7 @@ interface PageCustomMethods {
   checkUserShopStatus: () => void;
   goToMy: () => void;
   fetchStockList: () => void;
+  loadDashboardStats: () => void; // 🌟 補全看板統計加載方法
   parseRobotMessage: (robotMsg: ChatMessage) => ChatMessage;
   onSelectStockDevice: (e: WechatMiniprogram.CustomEvent) => void;
   showDevicePicker: (candidates: Array<any>) => void;
@@ -188,14 +192,37 @@ Page<PageData, PageCustomMethods>({
 
     this.checkUserShopStatus();
 
+    // 🌟 加載看板統計數據並給 stats 賦值
+    this.loadDashboardStats();
+  },
+
+  // 🌟 核心賦值方法：獲取看板數據並更新 setData({ stats })
+  async loadDashboardStats() {
+    const role = getCurrentUserRole();
     if (role === 'admin' || role === 'manager' || role === 'owner') {
-      fetchDashboardStats();
+      try {
+        const res: any = await fetchDashboardStats();
+        if (res) {
+          // 支援兩種數據結構的容錯映射 (Direct object or res.data)
+          const data = res.data || res;
+          this.setData({
+            stats: {
+              profit: data.profit || data.net_profit || 0,
+              income: data.income || data.total_revenue || 0,
+              expense: data.expense || data.total_expense || 0,
+              stockCount: data.stockCount || data.stock_count || data.total_stock || 0
+            }
+          });
+        }
+      } catch (err) {
+        console.error('更新 stats 統計數據失敗:', err);
+      }
     }
   },
 
   fetchStockList() {
     request<{ items?: StockItem[] }>({
-      url: '/api/v1/shop/inventory/list?status=1',
+      url: '/api/v1/inventories/list?status=1',
       method: 'GET',
       header: {
         'X-Shop-Id': String(getCurrentShopId()),
@@ -263,7 +290,7 @@ Page<PageData, PageCustomMethods>({
   },
 
   checkUserShopStatus() {
-    request<{ id?: number | string }>({ url: '/api/v1/shops/current', method: 'GET' })
+    request<{ id?: number | string; name?: string }>({ url: '/api/v1/shops/current', method: 'GET' })
       .then((resData) => {
         if (!resData || !resData.id) {
           wx.redirectTo({
@@ -271,6 +298,13 @@ Page<PageData, PageCustomMethods>({
           });
         } else {
           wx.setStorageSync('current_shop_id', resData.id);
+          
+          if (resData.name) {
+            this.setData({
+              shopName: resData.name
+            });
+            wx.setStorageSync('current_shop_name', resData.name);
+          }
         }
       })
       .catch((err: any) => {
@@ -451,9 +485,8 @@ Page<PageData, PageCustomMethods>({
           lastMsgId: `msg-${finalMessages.length - 1}`,
         });
 
-        if (currentRole === 'admin' || currentRole === 'manager') {
-          fetchDashboardStats();
-        }
+        // 🌟 對話結束後刷新看板數據
+        this.loadDashboardStats();
       })
       .catch((err) => {
         let mockMsg: ChatMessage = {
@@ -493,34 +526,49 @@ Page<PageData, PageCustomMethods>({
 
     if (info) {
       request({
-        url: '/api/v1/shop/device/add',
+        url: '/api/v1/inventories/device/add',
         method: 'POST',
         data: {
-          model: info.model || info.model_or_id,
-          cost: info.cost || info.cost_price,
-          notes: info.notes || ''
+          supplier_name: info.supplier_name,
+          supplier_phone: info.supplier_phone,
+          items:[{
+            type: info.product_type,
+            model_name: info.model || info.model_or_id,
+            cost_price: info.cost || info.cost_price,
+            notes: info.notes || '',
+          }]
         }
       })
-        .then(() => {
-          const successMsg = this.tFormat('stock_in_success', { model: info.model || (this.data as any).t?.device || '設備' });
-          wx.showToast({ title: successMsg, icon: 'success' });
+      .then(() => {
+        // 2. 判斷 tFormat 是否存在，不存在則降級使用默認文案，避免 TypeError
+        const modelName = info.model || (this.data as any).t?.device || '設備';
+        const successMsg = typeof this.tFormat === 'function' 
+          ? this.tFormat('stock_in_success', { model: modelName })
+          : `成功入庫 ${modelName}`;
 
-          if (typeof index === 'number') {
-            this.setData({
-              [`messages[${index}].isConfirmed`]: true
-            });
-          }
+        wx.showToast({ title: successMsg, icon: 'success' });
 
+        // 3. 安全更新單條 Message 狀態
+        if (typeof index === 'number' && index >= 0) {
+          this.setData({
+            [`messages[${index}].isConfirmed`]: true
+          });
+        }
+
+        // 4. 安全調用刷新方法
+        if (typeof this.fetchStockList === 'function') {
           this.fetchStockList();
+        }
 
-          const currentRole = getCurrentUserRole();
-          if (currentRole === 'admin' || currentRole === 'manager') {
-            fetchDashboardStats();
-          }
-        })
-        .catch((err: any) => {
-          wx.showToast({ title: err?.detail || (this.data as any).t?.stock_in_failed || '入庫失敗，請重試', icon: 'none' });
-        });
+        if (typeof this.loadDashboardStats === 'function') {
+          this.loadDashboardStats();
+        }
+      })
+      .catch((err: any) => {
+        console.error('入庫失敗詳情:', err);
+        const failMsg = err?.detail || (this.data as any).t?.stock_in_failed || '入庫失敗，請重試';
+        wx.showToast({ title: failMsg, icon: 'none' });
+      });
     }
   },
 
@@ -544,7 +592,7 @@ Page<PageData, PageCustomMethods>({
       const finalSnCode = info.selected_device ? (info.selected_device.sn_code || '') : (info.sn_code || '');
 
       request({
-        url: '/api/v1/shop/device/sell',
+        url: '/api/v1/inventories/device/sell',
         method: 'POST',
         data: {
           model: finalModel,
@@ -553,26 +601,36 @@ Page<PageData, PageCustomMethods>({
           notes: info.notes || '二手銷售'
         }
       })
-        .then(() => {
-          const successMsg = this.tFormat('sell_success', { model: finalModel || (this.data as any).t?.device || '設備' });
-          wx.showToast({ title: successMsg, icon: 'success' });
+      .then(() => {
+        // 3. 安全獲取成功文案（防止 tFormat 函數未找到導致 TypeError）
+        const modelName = finalModel || (this.data as any).t?.device || '設備';
+        const successMsg = typeof this.tFormat === 'function'
+          ? this.tFormat('sell_success', { model: modelName })
+          : `已成功出售 ${modelName}`;
 
-          if (typeof index === 'number') {
-            this.setData({
-              [`messages[${index}].isConfirmed`]: true
-            });
-          }
+        wx.showToast({ title: successMsg, icon: 'success' });
 
+        // 4. 安全更新 UI 卡片確認狀態
+        if (typeof index === 'number' && index >= 0) {
+          this.setData({
+            [`messages[${index}].isConfirmed`]: true
+          });
+        }
+
+        // 5. 安全調用列表與看板刷新函數
+        if (typeof this.fetchStockList === 'function') {
           this.fetchStockList();
+        }
 
-          const currentRole = getCurrentUserRole();
-          if (currentRole === 'admin' || currentRole === 'manager') {
-            fetchDashboardStats();
-          }
-        })
-        .catch((err: any) => {
-          wx.showToast({ title: err?.detail || (this.data as any).t?.sell_failed || '出售失敗', icon: 'none' });
-        });
+        if (typeof this.loadDashboardStats === 'function') {
+          this.loadDashboardStats();
+        }
+      })
+      .catch((err: any) => {
+        console.error('出售失敗詳情:', err);
+        const failMsg = err?.detail || (this.data as any).t?.sell_failed || '出售失敗';
+        wx.showToast({ title: failMsg, icon: 'none' });
+      });
     }
   },
 

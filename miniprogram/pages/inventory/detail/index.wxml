@@ -1,0 +1,57 @@
+<view class="page-container">
+  <!-- 自定義公共頂欄 -->
+  <nav-bar title="設備詳情"></nav-bar>
+
+  <!-- 1. 設備基本資訊卡片 -->
+  <view class="section-card detail-card">
+    <view class="model-header">
+      <text class="model-name">{{ device.modelName }}</text>
+      <text class="badge {{ device.type }}">{{ device.type === 'new' ? '新機' : '二手機' }}</text>
+    </view>
+    
+    <view class="info-list">
+      <view class="info-item">
+        <text class="label">串號 (IMEI/SN)</text>
+        <text class="val imei-code">{{ device.imei }}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">當前狀態</text>
+        <text class="val status-text {{ device.status }}">{{ statusTextMap[device.status] }}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">進貨成本</text>
+        <text class="val price">¥{{ device.costPrice }}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">預設售價</text>
+        <text class="val price">¥{{ device.salePrice }}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 2. 溯源與入庫資訊卡片 -->
+  <view class="section-card detail-card">
+    <view class="card-title">進貨溯源資訊</view>
+    
+    <view class="info-list">
+      <view class="info-item">
+        <text class="label">關聯進貨單</text>
+        <text class="val link">{{ device.purchaseOrderId }}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">供應商</text>
+        <text class="val">{{ device.supplierName }} ({{ device.supplierPhone }})</text>
+      </view>
+      <view class="info-item">
+        <text class="label">入庫日期</text>
+        <text class="val">{{ device.inboundDate }}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 3. 操作按鈕區 -->
+  <view class="action-card" wx:if="{{ device.status === 2 }}">
+    <button class="btn btn-warning" bindtap="markRepair">標記為維修中</button>
+    <button class="btn btn-danger" bindtap="markScrap">標記為報廢</button>
+  </view>
+</view>

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "新建進貨單",
+  "usingComponents": {
+    "partner-select": "/components/partner-select/index",
+    "nav-bar": "/components/nav-bar/index"
+  }
+}

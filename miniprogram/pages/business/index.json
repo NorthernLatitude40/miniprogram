@@ -1,6 +1,8 @@
 {
+  "navigationBarTitleText": "經營看板",
   "usingComponents": {
-    "ec-canvas": "../../components/ec-canvas/ec-canvas"
+    "ec-canvas": "../../components/ec-canvas/ec-canvas",
+    "nav-bar": "/components/nav-bar/index"
   },
   "enablePullDownRefresh": true,
   "navigationStyle": "custom"

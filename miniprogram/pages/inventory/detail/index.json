@@ -1,5 +1,5 @@
 {
-  "navigationStyle": "custom",
+  "navigationBarTitleText": "設備詳情",
   "usingComponents": {
     "nav-bar": "/components/nav-bar/index"
   }

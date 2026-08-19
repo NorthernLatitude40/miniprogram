@@ -1,0 +1,27 @@
+<view class="section-card form-card">
+  <view class="card-title">1. 供應商 / 客戶資訊</view>
+  
+  <!-- 聯繫電話 -->
+  <view class="form-item">
+    <text class="label">聯繫電話</text>
+    <input 
+      class="input" 
+      type="number" 
+      maxlength="11"
+      placeholder="輸入電話自動查詢歷史客戶" 
+      value="{{ phone }}"
+      bindblur="onPhoneChange"
+    />
+  </view>
+  
+  <!-- 姓名 / 名稱 -->
+  <view class="form-item">
+    <text class="label">姓名 / 名稱</text>
+    <input 
+      class="input" 
+      placeholder="請輸入供應商或客戶姓名" 
+      value="{{ name }}"
+      bindinput="onNameChange"
+    />
+  </view>
+</view>

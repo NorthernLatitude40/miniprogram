@@ -1,0 +1,102 @@
+<view class="page-container">
+  <!-- 自定義公共頂欄 -->
+  <nav-bar title="{{ type === 1 ? (lang.new_device_in || '新機入庫') : (lang.used_device_in || '二手機入庫') }}"></nav-bar>
+
+  <!-- 1. 供應商 / 客戶資訊卡片 -->
+  <partner-select 
+    phone="{{ supplierPhone }}"
+    name="{{ supplierName }}"
+    partnerId="{{ partnerId }}"
+    bind:change="onPartnerChange"
+  />
+
+  <!-- 2. 設備與串號明細卡片 -->
+  <view class="section-card form-card">
+    <view class="card-title flex-between">
+      <text>2. 設備與串號明細</text>
+      <view class="btn-add-model" bindtap="addModelItem">+ 新增機型</view>
+    </view>
+
+    <block wx:for="{{ items }}" wx:key="index" wx:for-index="itemIndex">
+      <view class="model-block">
+        <view class="model-head">
+          <input 
+            class="model-input" 
+            placeholder="機型名稱 (如 iPhone 15 Pro)" 
+            value="{{ item.modelName }}"
+            data-index="{{ itemIndex }}"
+            bindinput="onModelNameInput"
+          />
+          <text class="btn-del" wx:if="{{ items.length > 1 }}" data-index="{{ itemIndex }}" bindtap="removeModelItem">刪除機型</text>
+        </view>
+
+        <!-- 單台成本價輸入框 -->
+        <view class="form-item border-none" style="padding: 10rpx 0;">
+          <text class="label" style="font-size: 26rpx; color: #666;">單台成本價 (元)</text>
+          <input 
+            class="input" 
+            type="digit" 
+            placeholder="0.00" 
+            value="{{ item.costPrice }}"
+            data-index="{{ itemIndex }}"
+            bindinput="onCostPriceInput"
+            bindblur="onCostPriceInput"
+          />
+        </view>
+
+        <!-- 串號掃碼與手動錄入區 -->
+        <view class="imei-section">
+          <view class="imei-head">
+            <text class="sub-label">串號列表 (IMEI/SN)</text>
+            <button class="scan-btn" data-index="{{ itemIndex }}" bindtap="scanIMEI">📷 掃碼錄入</button>
+          </view>
+
+          <!-- 手動輸入 SN/IMEI 輸入框與新增按鈕 -->
+          <view class="imei-input-box" style="display: flex; gap: 12rpx; margin-bottom: 16rpx;">
+            <input 
+              class="input imei-input" 
+              style="flex: 1; background: #f7f8fa; padding: 10rpx 20rpx; border-radius: 8rpx; font-size: 26rpx;"
+              placeholder="手動輸入或貼上 SN / IMEI" 
+              value="{{ item.inputImei }}"
+              data-index="{{ itemIndex }}"
+              bindinput="onImeiInput"
+              bindconfirm="addImeiManual"
+            />
+            <button 
+              style="font-size: 26rpx; background: #07c160; color: #fff; margin: 0; padding: 0 24rpx; height: 60rpx; line-height: 60rpx;"
+              data-index="{{ itemIndex }}" 
+              bindtap="addImeiManual"
+            >+ 新增</button>
+          </view>
+
+          <!-- 串號標籤列表 -->
+          <view class="imei-tag-list">
+            <view class="imei-tag" wx:for="{{ item.devices }}" wx:key="imei" wx:for-item="device" wx:for-index="devIndex">
+              <text>{{ device.imei }}</text>
+              <text class="close-btn" data-itemindex="{{ itemIndex }}" data-devindex="{{ devIndex }}" bindtap="removeIMEI">×</text>
+            </view>
+            <view wx:if="{{ item.devices.length === 0 }}" class="empty-imei-tip">尚未錄入串號，可手動輸入或點擊掃碼</view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 3. 結算金額卡片 -->
+  <view class="section-card form-card">
+    <view class="card-title">3. 結算金額</view>
+    <view class="form-item border-none">
+      <text class="label">採購總額 (元)</text>
+      <input 
+        class="input price-input" 
+        type="digit" 
+        placeholder="0.00" 
+        value="{{ totalAmount }}"
+        bindinput="onAmountInput"
+      />
+    </view>
+  </view>
+
+  <!-- 提交按鈕 -->
+  <button class="submit-btn" bindtap="submitForm">提交待入庫單據</button>
+</view>

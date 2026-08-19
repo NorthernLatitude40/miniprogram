@@ -1,0 +1,21 @@
+<view class="custom-nav-wrapper" style="height: {{statusBarHeight + navBarHeight}}px;">
+  <view class="custom-nav-bar" style="height: {{statusBarHeight + navBarHeight}}px;">
+    <!-- 返回按鈕 -->
+    <view 
+      wx:if="{{showBack}}"
+      class="back-btn" 
+      bindtap="goBack"
+      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
+    >
+      <text class="back-icon">‹</text>
+    </view>
+
+    <!-- 標題 -->
+    <view 
+      class="nav-title" 
+      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
+    >
+      {{title}}
+    </view>
+  </view>
+</view>

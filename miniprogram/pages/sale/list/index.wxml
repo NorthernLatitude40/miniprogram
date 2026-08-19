@@ -1,0 +1,90 @@
+<view class="page-container">
+  <!-- 自定義公共頂欄 -->
+  <nav-bar title="{{ lang.sale_mgmt || '銷售管理' }}"></nav-bar>
+
+  <!-- 頂部搜尋與開單按鈕 -->
+  <view class="section-card header-card">
+    <view class="search-box">
+      <input 
+        class="search-input" 
+        placeholder="{{ lang.sale_search_placeholder || '搜尋串號/客戶電話/銷售單號' }}" 
+        value="{{ searchKeyword }}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearch"
+      />
+      <button class="search-btn" bindtap="onSearch">搜尋</button>
+    </view>
+
+    <!-- 開立銷售單按鈕 -->
+    <view class="action-row">
+      <button class="btn btn-primary" bindtap="goToCreateForm">
+        + 新建銷售出庫單
+      </button>
+    </view>
+  </view>
+
+  <!-- 狀態 Tab 切換 -->
+  <view class="tab-header">
+    <view 
+      class="tab-item {{ activeTab === 'all' ? 'active' : '' }}" 
+      data-tab="all" 
+      bindtap="onTabChange"
+    >
+      全部
+    </view>
+    <view 
+      class="tab-item {{ activeTab === 'completed' ? 'active' : '' }}" 
+      data-tab="completed" 
+      bindtap="onTabChange"
+    >
+      已完成
+    </view>
+    <view 
+      class="tab-item {{ activeTab === 'returned' ? 'active' : '' }}" 
+      data-tab="returned" 
+      bindtap="onTabChange"
+    >
+      退貨/售後
+    </view>
+  </view>
+
+  <!-- 銷售單據列表 -->
+  <view class="order-list">
+    <block wx:if="{{ saleList.length > 0 }}">
+      <view 
+        class="section-card order-card" 
+        wx:for="{{ saleList }}" 
+        wx:key="id" 
+        data-id="{{ item.id }}" 
+        bindtap="goToDetail"
+      >
+        <view class="card-head">
+          <text class="order-no">{{ item.id }}</text>
+          <text class="status-tag status-{{ item.payment_status }}">
+            {{ item.payment_status == 2 ? '已付款' : (item.payment_status == 1 ? '已付款' : (item.payment_status == 3 ? '已取消' : (item.payment_status == 0 ? '已退款' : '未知狀態'))) }}
+          </text>
+        </view>
+        <view class="card-body">
+          <view class="row">
+            <text class="label">客戶名稱：</text>
+            <text class="val">{{ item.customerName }} ({{ item.customerPhone }})</text>
+          </view>
+          <view class="row">
+            <text class="label">銷售台數：</text>
+            <text class="val">{{ item.totalQuantity }} 台</text>
+          </view>
+          <view class="row">
+            <text class="label">銷售總額：</text>
+            <text class="val price">¥{{ item.totalAmount }}</text>
+          </view>
+        </view>
+        <view class="card-foot">
+          <text class="time">{{ item.createdAt }}</text>
+          <text class="detail-link">查看詳情 ›</text>
+        </view>
+      </view>
+    </block>
+
+    <view wx:else class="empty-box">暫無相關銷售單據</view>
+  </view>
+</view>

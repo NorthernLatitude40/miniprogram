@@ -11,7 +11,15 @@
     "pages/invite-accept/index",
     "pages/staff-detail/index",
     "pages/business/index",
-    "pages/search/index"
+    "pages/search/index",
+    "pages/purchase/list/index",
+    "pages/purchase/form/index",
+    "pages/purchase/detail/index",
+    "pages/sale/list/index",
+    "pages/sale/form/index",
+    "pages/sale/detail/index",
+    "pages/inventory/list/index",
+    "pages/inventory/detail/index"
   ],
   "networkTimeout": {
     "request": 120000,

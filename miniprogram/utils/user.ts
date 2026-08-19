@@ -26,7 +26,7 @@ export interface DashboardOverviewData {
   income: number;
   expense: number;
   order_count: number;
-  in_stock_devices: int | number;
+  in_stock_devices: number; // 修正：移除 TypeScript 不支援的 int，僅保留 number
   today_profit?: number;
   today_income?: number;
   today_expense?: number;
@@ -40,6 +40,13 @@ export interface DashboardStatsResult {
   orderCount: number;
   stockCount: number;
   trend: TrendItem[];
+}
+
+export interface PartnerSearchResult {
+  id?: number | null;
+  name?: string;
+  phone?: string;
+  [key: string]: any;
 }
 
 // ==================== API 请求函数 ====================
@@ -115,7 +122,7 @@ export function fetchDashboardStats(range: string = 'today'): Promise<DashboardS
         expense: d.expense ?? d.today_expense ?? 0,
         orderCount: d.order_count ?? 0,
         stockCount: d.in_stock_devices ?? 0,
-        trend: Array.isArray(d.trend) ? d.trend : [], // 👈 正确保留并传出后端返回的 trend 数组
+        trend: Array.isArray(d.trend) ? d.trend : [],
       };
 
       return stats;
@@ -134,4 +141,30 @@ export function fetchDashboardStats(range: string = 'today'): Promise<DashboardS
       }
       throw err;
     });
+}
+
+/**
+ * 查询客户/供应商信息
+ * @param phone 手机号
+ */
+export function searchPartner(phone: string): Promise<PartnerSearchResult | null> {
+  wx.showLoading({ title: '查詢客戶中...', mask: false });
+  
+  return request({
+    url: `/api/v1/partners/search`,
+    method: 'GET',
+    data: { phone }
+  }).then((res: any) => {
+    wx.hideLoading();
+    const data = res?.data || res;
+    if (data && data.name) {
+      wx.showToast({ title: '已帶出歷史記錄', icon: 'success' });
+      return data as PartnerSearchResult;
+    }
+    return null;
+  }).catch((err: any) => {
+    wx.hideLoading();
+    console.error('查詢客戶資訊失敗:', err);
+    throw err;
+  });
 }

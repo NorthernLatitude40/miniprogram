@@ -1,5 +1,5 @@
 {
-  "navigationStyle": "custom",
+  "navigationBarTitleText": "單據詳情",
   "usingComponents": {
     "nav-bar": "/components/nav-bar/index"
   }

@@ -1,0 +1,184 @@
+.form-card {
+  padding: 28rpx !important;
+  margin-top: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.card-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 20rpx;
+  padding-bottom: 12rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-add-model {
+  font-size: 26rpx;
+  color: #1989fa;
+  font-weight: normal;
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f7f8fa;
+}
+
+.border-none {
+  border-bottom: none;
+}
+
+.label {
+  font-size: 28rpx;
+  color: #666666;
+  width: 200rpx;
+}
+
+.input {
+  flex: 1;
+  text-align: right;
+  font-size: 28rpx;
+  color: #333333;
+}
+
+.price-input {
+  color: #ee0a24;
+  font-size: 34rpx;
+  font-weight: bold;
+}
+
+/* 機型區塊樣式 */
+.model-block {
+  background: #f9fafb;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.model-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.model-input {
+  flex: 1;
+  background: #ffffff;
+  height: 64rpx;
+  border-radius: 8rpx;
+  padding: 0 16rpx;
+  font-size: 28rpx;
+  border: 1rpx solid #dcdee0;
+}
+
+.btn-del {
+  font-size: 24rpx;
+  color: #ee0a24;
+  margin-left: 16rpx;
+}
+
+/* IMEI 標籤區 */
+.imei-section {
+  margin-top: 16rpx;
+}
+
+.imei-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.sub-label {
+  font-size: 24rpx;
+  color: #888888;
+}
+
+.scan-btn {
+  height: 52rpx !important;
+  line-height: 52rpx !important;
+  padding: 0 20rpx !important;
+  background: #07c160;
+  color: #ffffff;
+  font-size: 24rpx;
+  border-radius: 26rpx;
+}
+
+.imei-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.imei-tag {
+  display: flex;
+  align-items: center;
+  background: #e8f4ff;
+  color: #1989fa;
+  font-size: 24rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+}
+
+.close-btn {
+  margin-left: 12rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #1989fa;
+}
+
+.empty-imei-tip {
+  font-size: 24rpx;
+  color: #cccccc;
+  padding: 10rpx 0;
+}
+
+/* 底部提交按鈕 */
+.submit-btn {
+  width: 100% !important;
+  height: 88rpx !important;
+  line-height: 88rpx !important;
+  background: #1989fa;
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: bold;
+  border-radius: 44rpx;
+  margin-top: 40rpx !important;
+  margin-bottom: 60rpx !important;
+}
+
+.imei-input-box {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.imei-input {
+  flex: 1;
+  background-color: #f7f8fa;
+  border-radius: 8rpx;
+  padding: 12rpx 20rpx;
+  font-size: 26rpx;
+}
+
+.btn-add-sn {
+  font-size: 26rpx;
+  background-color: #07c160;
+  color: #fff;
+  padding: 0 24rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  border-radius: 8rpx;
+  margin: 0;
+}

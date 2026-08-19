@@ -1,18 +1,9 @@
-<!-- pages/business/index.wxml -->
 <view class="business-container">
 
-<!-- 1. 固定頂部的自定義導覽列 -->
-<view class="custom-nav-header">
-  <view style="height: {{statusBarHeight}}px;"></view>
-  <view class="nav-title-bar" style="height: {{menuHeight}}px;">
-    <text class="nav-shop-name">{{shopName}}</text>
-  </view>
-</view>
+<!-- 1. 使用公共自訂導覽列 -->
+<nav-bar title="{{shopName}}" showBack="{{false}}"></nav-bar>
 
-<!-- 2. 頁面內容避讓占位塊 -->
-<view style="height: {{navBarHeight}}px; width: 100%; flex-shrink: 0;"></view>
-
-<!-- 3. 頂部 AI 快捷入口 -->
+<!-- 2. 頂部 AI 快捷入口 -->
 <view class="header-section">
   <view class="ai-entry-card" bindtap="backToAI">
     <view class="ai-entry-left">
@@ -26,7 +17,7 @@
   </view>
 </view>
 
-<!-- 4. 全局快捷搜尋框 -->
+<!-- 3. 全局快捷搜尋框 -->
 <view class="search-section" bindtap="goToSearch">
   <view class="search-bar">
     <text class="search-icon">🔍</text>
@@ -39,7 +30,7 @@
   </view>
 </view>
 
-<!-- 5. 經營收支報表看板 -->
+<!-- 4. 經營收支報表看板 -->
 <view class="card report-dashboard-card">
   <view class="report-header">
     <text class="card-title">{{t.operating_statement || '经营收支报表'}}</text>
@@ -87,7 +78,7 @@
   </view>
 </view>
 
-<!-- 6. 核心功能網格 -->
+<!-- 5. 核心功能網格 -->
 <view class="section-title">{{t.core_functions || '核心功能'}}</view>
 <view class="function-grid">
   <view class="grid-card purchase" bindtap="goToPurchase">

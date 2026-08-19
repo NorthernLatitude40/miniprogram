@@ -1,0 +1,56 @@
+<view class="page-container">
+  <nav-bar title="{{ lang.order_detail || '單據詳情' }}"></nav-bar>
+
+  <!-- 狀態與基本資訊卡片 -->
+  <view class="section-card detail-card">
+    <view class="status-banner {{ order.status }}">
+      <text class="status-text">{{ order.status === 'pending' ? '待確認入庫' : '已完成入庫' }}</text>
+    </view>
+    
+    <view class="info-list">
+      <view class="info-item">
+        <text class="label">單號</text>
+        <text class="val">{{ order.id }}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">類型</text>
+        <text class="val">{{ order.type === 'new' ? '新機入庫' : '二手機入庫' }}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">供應商/客戶</text>
+        <text class="val">{{ order.supplierName }} ({{ order.supplierPhone }})</text>
+      </view>
+      <view class="info-item">
+        <text class="label">採購總額</text>
+        <text class="val price">¥{{ order.totalAmount }}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">創建時間</text>
+        <text class="val">{{ order.createdAt }}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 設備與串號明細卡片 -->
+  <view class="section-card detail-card">
+    <view class="card-title">設備串號明細</view>
+
+    <view class="model-block" wx:for="{{ order.items }}" wx:key="modelName">
+      <view class="model-name">{{ item.modelName }} ({{ item.devices.length }}台)</view>
+      <view class="imei-grid">
+        <view class="imei-chip" wx:for="{{ item.devices }}" wx:key="imei" wx:for-item="dev">
+          {{ dev.imei }}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 審核入庫按鈕 -->
+  <button 
+    wx:if="{{ order.status === 'pending' }}" 
+    class="confirm-btn" 
+    bindtap="confirmInbound"
+  >
+    確認完成入庫
+  </button>
+</view>

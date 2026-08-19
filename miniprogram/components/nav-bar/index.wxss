@@ -1,0 +1,45 @@
+.custom-nav-wrapper {
+  width: 100%;
+}
+
+.custom-nav-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f5f6fa;
+  z-index: 999;
+  box-sizing: border-box;
+}
+
+.back-btn {
+  position: absolute;
+  left: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding-right: 20rpx;
+}
+
+.back-btn:active {
+  opacity: 0.6;
+}
+
+.back-icon {
+  font-size: 52rpx;
+  color: #333333;
+  font-weight: 400;
+}
+
+.nav-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: auto;
+  text-align: center;
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333333;
+  pointer-events: none;
+}

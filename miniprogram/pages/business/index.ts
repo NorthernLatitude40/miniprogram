@@ -2,6 +2,7 @@
 // @ts-ignore
 const echarts = require('../../components/ec-canvas/echarts');
 import { fetchDashboardStats } from '../../utils/user';
+import { request } from '../../utils/request'; // 請確保引入您的 request 工具函數
 import { i18nBehavior } from '../../utils/i18n/i18n';
 const zh_CN = require('../../utils/i18n/locales/zh_CN');
 const zh_HK = require('../../utils/i18n/locales/zh_HK');
@@ -15,7 +16,7 @@ Page({
     statusBarHeight: 20,
     menuHeight: 32,
     navBarHeight: 88,
-    shopName: 'ONTO 品牌旗艦店',
+    shopName: 'ONTO 品牌旗艦店', // 預設名稱
 
     timeRangeOptions: [] as string[],
     selectedTimeIndex: 0,
@@ -45,7 +46,10 @@ Page({
 
   onLoad() {
     this.initNavBar();
-    // 確保 behavior 資料寫入完成後刷新語言與數據
+    // 1. 優先獲取並更新店鋪資訊
+    this.fetchCurrentShopInfo();
+
+    // 2. 確保 behavior 資料寫入完成後刷新語言與數據
     wx.nextTick(() => {
       this.updateLanguage();
       this.loadReportData(this.data.selectedTimeIndex);
@@ -53,8 +57,33 @@ Page({
   },
 
   onShow() {
-    // 每次頁面顯示時刷新語言（應對從「我的中心」切換語言後返回的情況）
     this.updateLanguage();
+  },
+
+  // 獲取當前店鋪資訊並更新 shopName
+  fetchCurrentShopInfo() {
+    // 優先從本地快取讀取，提升頁面加載速度
+    const cachedShopName = wx.getStorageSync('current_shop_name');
+    if (cachedShopName) {
+      this.setData({ shopName: cachedShopName });
+    }
+
+    // 發送請求獲取最新店鋪名稱
+    request<{ id?: number | string; name?: string }>({ url: '/api/v1/shops/current', method: 'GET' })
+      .then((resData) => {
+        if (resData && resData.name) {
+          this.setData({
+            shopName: resData.name
+          });
+          wx.setStorageSync('current_shop_name', resData.name);
+          if (resData.id) {
+            wx.setStorageSync('current_shop_id', resData.id);
+          }
+        }
+      })
+      .catch((err: any) => {
+        console.error('Business 頁面獲取店鋪狀態失敗:', err);
+      });
   },
 
   onUnload() {
@@ -71,6 +100,7 @@ Page({
   },
 
   onPullDownRefresh() {
+    this.fetchCurrentShopInfo();
     this.loadReportData(this.data.selectedTimeIndex, () => {
       wx.stopPullDownRefresh();
     });
@@ -78,17 +108,12 @@ Page({
 
   // 安全獲取當前字典包
   getLangDict() {
-    // 1. 讀取 Storage 中保存的語言設置
     const currentLang = wx.getStorageSync('user_language') || 'zh_CN';
-    console.log('[DEBUG i18n] 當前 Storage 存的 language Key 是：', currentLang);
-
-    // 2. 解構相容處理（應對 export default 與 module.exports 的差異）
     const dict_cn = zh_CN.default || zh_CN;
     const dict_hk = zh_HK.default || zh_HK;
     const dict_en = en.default || en;
     const dict_ja = ja.default || ja;
 
-    // 3. 建立映射表（覆蓋所有常見的繁體/英文 Key 寫法）
     const dictMap: Record<string, any> = {
       'zh_CN': dict_cn,
       'zh-CN': dict_cn,
@@ -102,22 +127,13 @@ Page({
       'ja': dict_ja
     };
 
-    // 4. 獲取對應字典，若匹配不到則降級為繁體 hk，再沒有才降級為簡體 cn
     const targetDict = dictMap[currentLang] || dict_hk || dict_cn || {};
-
-    // 5. 強制同步給 data.t，供 WXML 使用
     this.setData({ t: targetDict });
-
     return targetDict;
   },
 
-  // 更新多語言字典與動態選項
   updateLanguage() {
     const langDict = this.getLangDict();
-
-    console.log('[DEBUG i18n Fix] 最終生效的字典內容：', langDict);
-
-    // 動態構建下拉選單選項
     const timeRangeOptions = [
       langDict.today_overview || '今日概覽',
       langDict.last_7_days_report || '近7天報表',
@@ -125,36 +141,32 @@ Page({
     ];
 
     this.setData({ timeRangeOptions });
-
-    // 刷新統計文字標籤
     this.updateStatLabels(this.data.selectedTimeIndex);
 
-    // 切換語言時同步重繪圖表 Legend
     if (this.lastTrendData && this.lastTrendData.length > 0) {
       this.renderChart(this.lastTrendData);
     }
   },
 
-  // 根據當前選擇的時間區間與語言更新統計標籤
   updateStatLabels(index: number) {
     const langDict = this.getLangDict();
     const labelMap = [
       {
-        profit: langDict.today_gross_profit || '今日毛利(元)',
-        income: langDict.today_income || '今日收入(元)',
-        expense: langDict.today_expense || '今日支出(元)',
+        profit: langDict.today_gross_profit || '今日毛利',
+        income: langDict.today_income || '今日收入',
+        expense: langDict.today_expense || '今日支出',
         order: langDict.today_order_count || '今日成交'
       },
       {
-        profit: langDict.days_7_profit || '7天毛利(元)',
-        income: langDict.days_7_income || '7天總收入(元)',
-        expense: langDict.days_7_expense || '7天總支出(元)',
+        profit: langDict.days_7_profit || '7天毛利',
+        income: langDict.days_7_income || '7天總收入',
+        expense: langDict.days_7_expense || '7天總支出',
         order: langDict.days_7_order || '7天成交'
       },
       {
-        profit: langDict.month_profit || '本月毛利(元)',
-        income: langDict.month_income || '本月總收入(元)',
-        expense: langDict.month_expense || '本月總支出(元)',
+        profit: langDict.month_profit || '本月毛利',
+        income: langDict.month_income || '本月總收入',
+        expense: langDict.month_expense || '本月總支出',
         order: langDict.month_order || '本月成交'
       }
     ];
@@ -198,7 +210,6 @@ Page({
     this.loadReportData(index);
   },
 
-  // 統一載入報表數據
   loadReportData(index: number, callback?: () => void) {
     const rangeMap = ['today', '7days', 'month'];
     const currentRange = rangeMap[index] || 'today';
@@ -232,73 +243,76 @@ Page({
       });
   },
 
-  /**
-   * 渲染圖表
-   */
   renderChart(trendData: Array<{ date: string; income: number; expense: number; profit: number }>) {
-    setTimeout(() => {
-      const component = this.selectComponent('#dashboard-chart-canvas') as any;
-      if (!component) return;
+    wx.nextTick(() => {
+      setTimeout(() => {
+        const component = this.selectComponent('#dashboard-chart-canvas') as any;
+        if (!component) return;
 
-      const langDict = this.getLangDict();
-      const dates = trendData.map((item) => item.date || '');
-      const incomes = trendData.map((item) => item.income || 0);
-      const expenses = trendData.map((item) => item.expense || 0);
-      const profits = trendData.map((item) => item.profit || 0);
+        const langDict = this.getLangDict();
+        const dates = trendData.map((item) => item.date || '');
+        const incomes = trendData.map((item) => item.income || 0);
+        const expenses = trendData.map((item) => item.expense || 0);
+        const profits = trendData.map((item) => item.profit || 0);
 
-      const incomeLegend = langDict.legend_income || '收入';
-      const expenseLegend = langDict.legend_expense || '支出';
-      const profitLegend = langDict.legend_profit || '毛利';
+        const incomeLegend = langDict.legend_income || '收入';
+        const expenseLegend = langDict.legend_expense || '支出';
+        const profitLegend = langDict.legend_profit || '毛利';
 
-      const option = {
-        tooltip: { trigger: 'axis', confine: true },
-        legend: {
-          data: [incomeLegend, expenseLegend, profitLegend],
-          bottom: 0,
-          textStyle: { fontSize: 10, color: '#6B7280' }
-        },
-        grid: {
-          left: '3%',
-          right: '4%',
-          bottom: '18%',
-          top: '12%',
-          containLabel: true
-        },
-        xAxis: {
-          type: 'category',
-          boundaryGap: false,
-          data: dates,
-          axisLine: { lineStyle: { color: '#E5E7EB' } },
-          axisLabel: { color: '#9CA3AF', fontSize: 10, interval: 'auto' }
-        },
-        yAxis: {
-          type: 'value',
-          splitLine: { lineStyle: { type: 'dashed', color: '#F3F4F6' } },
-          axisLabel: { color: '#9CA3AF', fontSize: 10 }
-        },
-        series: [
-          { name: incomeLegend, type: 'line', smooth: true, symbol: 'circle', symbolSize: 4, data: incomes, itemStyle: { color: '#10B981' } },
-          { name: expenseLegend, type: 'line', smooth: true, symbol: 'circle', symbolSize: 4, data: expenses, itemStyle: { color: '#EF4444' } },
-          { name: profitLegend, type: 'line', smooth: true, symbol: 'circle', symbolSize: 4, data: profits, itemStyle: { color: '#3B82F6' } }
-        ]
-      };
+        const option = {
+          tooltip: { trigger: 'axis', confine: true },
+          legend: {
+            data: [incomeLegend, expenseLegend, profitLegend],
+            bottom: 0,
+            textStyle: { fontSize: 10, color: '#6B7280' }
+          },
+          grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '18%',
+            top: '12%',
+            containLabel: true
+          },
+          xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: dates,
+            axisLine: { lineStyle: { color: '#E5E7EB' } },
+            axisLabel: { color: '#9CA3AF', fontSize: 10, interval: 'auto' }
+          },
+          yAxis: {
+            type: 'value',
+            splitLine: { lineStyle: { type: 'dashed', color: '#F3F4F6' } },
+            axisLabel: { color: '#9CA3AF', fontSize: 10 }
+          },
+          series: [
+            { name: incomeLegend, type: 'line', smooth: true, symbol: 'circle', symbolSize: 4, data: incomes, itemStyle: { color: '#10B981' } },
+            { name: expenseLegend, type: 'line', smooth: true, symbol: 'circle', symbolSize: 4, data: expenses, itemStyle: { color: '#EF4444' } },
+            { name: profitLegend, type: 'line', smooth: true, symbol: 'circle', symbolSize: 4, data: profits, itemStyle: { color: '#3B82F6' } }
+          ]
+        };
 
-      if (this.chartInstance) {
-        this.chartInstance.setOption(option, true);
-      } else {
-        component.init((canvas: any, width: number, height: number, dpr: number) => {
-          const chart = echarts.init(canvas, null, {
-            width: width,
-            height: height,
-            devicePixelRatio: dpr
+        if (this.chartInstance) {
+          this.chartInstance.setOption(option, true);
+        } else {
+          component.init((canvas: any, width: number, height: number, dpr: number) => {
+            if (!canvas) {
+              console.warn('[ECharts] 獲取 Canvas 實例失敗，節點尚未掛載');
+              return;
+            }
+            const chart = echarts.init(canvas, null, {
+              width: width,
+              height: height,
+              devicePixelRatio: dpr
+            });
+            canvas.setChart(chart);
+            chart.setOption(option);
+            this.chartInstance = chart;
+            return chart;
           });
-          canvas.setChart(chart);
-          chart.setOption(option);
-          this.chartInstance = chart;
-          return chart;
-        });
-      }
-    }, 100);
+        }
+      }, 200);
+    });
   },
 
   backToAI() {
@@ -309,16 +323,16 @@ Page({
     });
   },
   goToPurchase() {
-    wx.navigateTo({ url: '/pages/purchase/index' });
+    wx.navigateTo({ url: '/pages/purchase/list/index' });
   },
   goToSales() {
-    wx.navigateTo({ url: '/pages/sales/index' });
+    wx.navigateTo({ url: '/pages/sale/list/index' });
   },
   goToNewStock() {
-    wx.navigateTo({ url: '/pages/stock/index?type=new' });
+    wx.navigateTo({ url: '/pages/inventory/list/index?type=new' });
   },
   goToUsedStock() {
-    wx.navigateTo({ url: '/pages/stock/index?type=used' });
+    wx.navigateTo({ url: '/pages/inventory/list/index?type=used' });
   },
   goToMy() {
     wx.navigateTo({ url: '/pages/my/index' });

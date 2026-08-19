@@ -1,0 +1,81 @@
+<view class="page-container">
+  <!-- 自定義公共頂欄 -->
+  <nav-bar title="新建銷售單"></nav-bar>
+
+  <!-- 1. 供應商 / 客戶資訊卡片 -->
+  <partner-select 
+    phone="{{ supplierPhone }}"
+    name="{{ supplierName }}"
+    partnerId="{{ partnerId }}"
+    bind:change="onPartnerChange"
+  />
+
+  <!-- 2. 出庫設備掃碼與手動輸入卡片 -->
+  <view class="section-card form-card">
+    <view class="card-title flex-between">
+      <text>2. 銷售設備明細</text>
+      <button class="scan-btn" bindtap="scanIMEI">📷 掃碼添加</button>
+    </view>
+
+    <!-- 🌟 新增：手動輸入 SN/IMEI 區域 -->
+    <view class="manual-input-box">
+      <input 
+        class="input manual-input" 
+        placeholder="或手動輸入 IMEI / SN 碼" 
+        value="{{ inputImei }}"
+        bindinput="onImeiInput"
+        bindconfirm="addManualDevice"
+      />
+      <button class="add-btn" bindtap="addManualDevice">添加</button>
+    </view>
+
+    <!-- 已掃碼 / 手動添加的出庫設備列表 -->
+    <view class="device-list" wx:if="{{ selectedDevices.length > 0 }}">
+      <view class="device-item" wx:for="{{ selectedDevices }}" wx:key="imei" wx:for-index="index">
+        <view class="device-info">
+          <text class="model-name">{{ item.modelName }}</text>
+          <text class="imei-code">IMEI/SN: {{ item.imei }}</text>
+        </view>
+        <view class="device-action">
+          <input 
+            class="price-input-sm" 
+            type="digit" 
+            placeholder="售價" 
+            value="{{ item.price }}"
+            data-index="{{ index }}"
+            bindinput="onDevicePriceInput"
+          />
+          <text class="btn-del" data-index="{{ index }}" bindtap="removeDevice">刪除</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="empty-tip">
+      尚未添加任何設備，請掃碼或手動輸入 IMEI/SN
+    </view>
+  </view>
+
+  <!-- 3. 結算金額卡片 -->
+  <view class="section-card form-card">
+    <view class="card-title">3. 結算金額</view>
+    
+    <view class="form-item">
+      <text class="label">設備數量</text>
+      <text class="val">{{ selectedDevices.length }} 台</text>
+    </view>
+
+    <view class="form-item border-none">
+      <text class="label">銷售總額 (元)</text>
+      <input 
+        class="input price-input" 
+        type="digit" 
+        placeholder="0.00" 
+        value="{{ totalAmount }}"
+        bindinput="onTotalAmountInput"
+      />
+    </view>
+  </view>
+
+  <!-- 提交按鈕 -->
+  <button class="submit-btn" disabled="{{ submitting }}" bindtap="submitForm">確認完成銷售出庫</button>
+</view>

@@ -1,5 +1,5 @@
 {
-  "navigationStyle": "custom",
+  "navigationBarTitleText": "銷售管理",
   "usingComponents": {
     "nav-bar": "/components/nav-bar/index"
   }

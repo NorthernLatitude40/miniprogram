@@ -1,24 +1,7 @@
 <!-- pages/my/index.wxml -->
-<view class="container">
-  <!-- 1. 自定義導航欄區域 -->
-  <view class="custom-nav-bar" style="height: {{statusBarHeight + navBarHeight}}px;">
-    <!-- 返回按鈕：嚴格與右側膠囊對齊 -->
-    <view 
-      class="back-btn" 
-      bindtap="goBack"
-      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
-    >
-      <text class="back-icon">‹</text>
-    </view>
-
-    <!-- 標題：垂直居中 -->
-    <view 
-      class="nav-title" 
-      style="top: {{menuTop}}px; height: {{menuHeight}}px; line-height: {{menuHeight}}px;"
-    >
-      {{t.my || '我的'}}
-    </view>
-  </view>
+<view class="page-container">
+  <!-- 1. 抽取後的頂欄：傳入 title 即可 -->
+  <nav-bar title="{{t.my || '我的'}}"></nav-bar>
 
   <!-- 2. 頂部 Header 藍底卡片 -->
   <view class="header-card" bindtap="goToProfile">

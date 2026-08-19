@@ -1,0 +1,82 @@
+<view class="page-container">
+  <!-- 自定義公共頂欄 -->
+  <nav-bar title="{{ lang.purchase_mgmt || '進貨管理' }}"></nav-bar>
+
+  <!-- 頂部搜尋與按鈕卡片 -->
+  <view class="section-card header-card">
+    <view class="search-box">
+      <input 
+        class="search-input" 
+        placeholder="{{ lang.phone_search_placeholder || '搜尋串號/電話/單號' }}" 
+        value="{{ searchKeyword }}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearch"
+      />
+      <button class="search-btn" bindtap="onSearch">搜尋</button>
+    </view>
+
+    <!-- 入庫操作按鈕列表 -->
+    <view class="action-row">
+      <button class="btn btn-primary" data-type="{{1}}" bindtap="goToCreateForm">
+        + {{ lang.new_device_in || '新機入庫' }}
+      </button>
+      <button class="btn btn-secondary" data-type="{{2}}" bindtap="goToCreateForm">
+        + {{ lang.used_device_in || '二手機入庫' }}
+      </button>
+    </view>
+  </view>
+
+  <!-- 狀態 Tab 切換卡片 -->
+  <view class="tab-header">
+    <view 
+      class="tab-item {{ activeTab === 'pending' ? 'active' : '' }}" 
+      data-tab="pending" 
+      bindtap="onTabChange"
+    >
+      {{ lang.status_pending || '待入庫' }}
+    </view>
+    <view 
+      class="tab-item {{ activeTab === 'completed' ? 'active' : '' }}" 
+      data-tab="completed" 
+      bindtap="onTabChange"
+    >
+      {{ lang.status_completed || '已完成' }}
+    </view>
+  </view>
+
+  <!-- 單據列表卡片區 -->
+  <view class="order-list">
+    <block wx:if="{{ purchaseList.length > 0 }}">
+      <view 
+        class="section-card order-card" 
+        wx:for="{{ purchaseList }}" 
+        wx:key="id" 
+        data-id="{{ item.id }}" 
+        bindtap="goToDetail"
+      >
+        <view class="card-head">
+          <text class="order-no">{{ item.title }}</text>
+          <text class="badge {{ item.type }}">{{ item.type === 'new' ? '新機' : '二手機' }}</text>
+        </view>
+        <view class="card-body">
+          <view class="row">
+            <text class="label">供應商/客戶：</text>
+            <text class="val">{{ item.supplierName }} ({{ item.supplierPhone }})</text>
+          </view>
+          <view class="row">
+            <text class="label">金額：</text>
+            <text class="val price">¥{{ item.totalAmount }}</text>
+          </view>
+        </view>
+        <view class="card-foot">
+          <text class="time">{{ item.createdAt }}</text>
+          <text class="status-tag {{ item.status }}">
+            {{ item.status === 1||item.status === 6 ? '待確認入庫' : '已入庫' }}
+          </text>
+        </view>
+      </view>
+    </block>
+
+    <view wx:else class="empty-box">暫無相關進貨單據</view>
+  </view>
+</view>
