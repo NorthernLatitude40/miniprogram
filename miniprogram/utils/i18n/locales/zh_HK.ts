@@ -88,5 +88,6 @@ export default {
     "shop_management": "店鋪管理",
     "shop_mgmt_desc": "店鋪資訊 | 員工管理",
     "language_setting": "語言設置",
-    "lang_system": "跟隨系統"
+    "lang_system": "跟隨系統",
+    "welcome_chat_tip": "你好！我是你的手機店 AI 智能管家。你可以跟我說：「收了一台 iPhone 13 成本 1800」或「查一下庫存/今天賺了多少錢」。"
 };

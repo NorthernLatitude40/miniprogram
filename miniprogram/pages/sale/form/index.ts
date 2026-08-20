@@ -12,6 +12,9 @@ Page({
     customerId: null as number | null,
     customerPhone: '',
     customerName: '',
+    supplierPhone: '',
+    supplierName: '',
+    partnerId: null as number | null,
     inputImei: '',
     totalAmount: '',
     remark: '',
@@ -179,9 +182,9 @@ Page({
 
     try {
       const payload = {
-        customer_id: this.data.customerId,
-        customer_phone: this.data.customerPhone || undefined,
-        customer_name: this.data.customerName || undefined,
+        customer_id: this.data.partnerId || this.data.customerId,
+        customer_phone: this.data.supplierPhone ||this.data.customerPhone || undefined,
+        customer_name: this.data.supplierName || this.data.customerName || undefined,
         outbound_type: 1, // 1: 零售銷售
         items: this.data.selectedDevices.map(item => ({
           inventory_id: item.inventoryId,

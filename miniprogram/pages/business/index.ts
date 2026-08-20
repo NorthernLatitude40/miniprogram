@@ -2,7 +2,7 @@
 // @ts-ignore
 const echarts = require('../../components/ec-canvas/echarts');
 import { fetchDashboardStats } from '../../utils/user';
-import { request } from '../../utils/request'; // 請確保引入您的 request 工具函數
+import { request } from '../../utils/request';
 import { i18nBehavior } from '../../utils/i18n/i18n';
 const zh_CN = require('../../utils/i18n/locales/zh_CN');
 const zh_HK = require('../../utils/i18n/locales/zh_HK');
@@ -16,7 +16,7 @@ Page({
     statusBarHeight: 20,
     menuHeight: 32,
     navBarHeight: 88,
-    shopName: 'ONTO 品牌旗艦店', // 預設名稱
+    shopName: 'ONTO 品牌旗艦店',
 
     timeRangeOptions: [] as string[],
     selectedTimeIndex: 0,
@@ -39,36 +39,26 @@ Page({
   chartInstance: null as any,
   lastTrendData: [] as any[],
 
-  // i18nBehavior 觸發語言切換時的回呼
   onLanguageChange() {
     this.updateLanguage();
   },
 
   onLoad() {
     this.initNavBar();
-    // 1. 優先獲取並更新店鋪資訊
     this.fetchCurrentShopInfo();
-
-    // 2. 確保 behavior 資料寫入完成後刷新語言與數據
-    wx.nextTick(() => {
-      this.updateLanguage();
-      this.loadReportData(this.data.selectedTimeIndex);
-    });
   },
 
   onShow() {
     this.updateLanguage();
+    this.loadReportData(this.data.selectedTimeIndex);
   },
 
-  // 獲取當前店鋪資訊並更新 shopName
   fetchCurrentShopInfo() {
-    // 優先從本地快取讀取，提升頁面加載速度
     const cachedShopName = wx.getStorageSync('current_shop_name');
     if (cachedShopName) {
       this.setData({ shopName: cachedShopName });
     }
 
-    // 發送請求獲取最新店鋪名稱
     request<{ id?: number | string; name?: string }>({ url: '/api/v1/shops/current', method: 'GET' })
       .then((resData) => {
         if (resData && resData.name) {
@@ -87,13 +77,17 @@ Page({
   },
 
   onUnload() {
+    this.destroyChart();
+  },
+
+  destroyChart() {
     if (this.chartInstance) {
       try {
         this.chartInstance.off();
         this.chartInstance.clear();
         this.chartInstance.dispose();
       } catch (e) {
-        console.warn('ECharts dispose 避讓正常警告:', e);
+        console.warn('ECharts dispose 正常避讓:', e);
       }
       this.chartInstance = null;
     }
@@ -106,7 +100,6 @@ Page({
     });
   },
 
-  // 安全獲取當前字典包
   getLangDict() {
     const currentLang = wx.getStorageSync('user_language') || 'zh_CN';
     const dict_cn = zh_CN.default || zh_CN;
@@ -171,7 +164,8 @@ Page({
       }
     ];
 
-    const currentLabels = labelMap[index] || labelMap[0];
+    const safeIndex = (index >= 0 && index <= 2) ? index : 0;
+    const currentLabels = labelMap[safeIndex];
 
     this.setData({
       'stats.profitLabel': currentLabels.profit,
@@ -206,15 +200,19 @@ Page({
 
   onTimeRangeChange(e: any) {
     const index = parseInt(e.detail.value, 10);
-    this.setData({ selectedTimeIndex: index });
-    this.loadReportData(index);
+    this.setData({ selectedTimeIndex: index }, () => {
+      this.loadReportData(index);
+    });
   },
 
   loadReportData(index: number, callback?: () => void) {
+    const safeIndex = (index >= 0 && index <= 2) ? index : 0;
     const rangeMap = ['today', '7days', 'month'];
-    const currentRange = rangeMap[index] || 'today';
+    const currentRange = rangeMap[safeIndex];
 
-    this.updateStatLabels(index);
+    // 同步 UI 選單索引與文字標籤
+    this.setData({ selectedTimeIndex: safeIndex });
+    this.updateStatLabels(safeIndex);
 
     wx.showLoading({ title: (this.getLangDict().loading || '載入中...'), mask: true });
 
@@ -246,9 +244,6 @@ Page({
   renderChart(trendData: Array<{ date: string; income: number; expense: number; profit: number }>) {
     wx.nextTick(() => {
       setTimeout(() => {
-        const component = this.selectComponent('#dashboard-chart-canvas') as any;
-        if (!component) return;
-
         const langDict = this.getLangDict();
         const dates = trendData.map((item) => item.date || '');
         const incomes = trendData.map((item) => item.income || 0);
@@ -292,14 +287,31 @@ Page({
           ]
         };
 
+        // 1. 實例存在時僅更新數據，避免觸發 component.init 導致 ec-canvas 內部報錯
         if (this.chartInstance) {
-          this.chartInstance.setOption(option, true);
-        } else {
-          component.init((canvas: any, width: number, height: number, dpr: number) => {
-            if (!canvas) {
-              console.warn('[ECharts] 獲取 Canvas 實例失敗，節點尚未掛載');
-              return;
-            }
+          try {
+            this.chartInstance.setOption(option, true);
+            return;
+          } catch (e) {
+            console.warn('[ECharts] setOption 失敗，嘗試重新初始化:', e);
+            this.chartInstance = null;
+          }
+        }
+
+        // 2. 僅在沒有實例時獲取 DOM 節點並初始化
+        const component = this.selectComponent('#dashboard-chart-canvas') as any;
+        if (!component) {
+          console.warn('[ECharts] 未找到 #dashboard-chart-canvas 組件節點');
+          return;
+        }
+
+        component.init((canvas: any, width: number, height: number, dpr: number) => {
+          if (!canvas) {
+            console.warn('[ECharts] Canvas 節點尚未準備就緒');
+            return;
+          }
+
+          try {
             const chart = echarts.init(canvas, null, {
               width: width,
               height: height,
@@ -309,8 +321,10 @@ Page({
             chart.setOption(option);
             this.chartInstance = chart;
             return chart;
-          });
-        }
+          } catch (err) {
+            console.error('[ECharts] 初始化圖表失敗:', err);
+          }
+        });
       }, 200);
     });
   },

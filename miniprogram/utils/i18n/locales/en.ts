@@ -88,5 +88,6 @@ export default {
     "shop_management": "Store Management",
     "shop_mgmt_desc": "Store Info | Staff Management",
     "language_setting": "Language Settings",
-    "lang_system": "Match System"
+    "lang_system": "Match System",
+    "welcome_chat_tip": "Hello! I am your phone shop's AI manager. You can tell me: 'Bought an iPhone 13 for $1800' or 'Check inventory / how much profit today?'"
 };

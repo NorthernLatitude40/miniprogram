@@ -88,5 +88,6 @@ export default {
     "shop_management": "店舗管理",
     "shop_mgmt_desc": "店舗情報 | 従業員管理",
     "language_setting": "言語設定",
-    "lang_system": "システム設定に準拠"
+    "lang_system": "システム設定に準拠",
+    "welcome_chat_tip": "こんにちは！スマホショップのAIスマート執事です。「iPhone 13を仕入れた（仕入れ値1800）」や「在庫確認 / 今日はいくら稼いだ？」のように話しかけてみてください。"
 };

@@ -106,6 +106,7 @@ Page({
         customerPhone: item.partner_phone || '-',
         totalAmount: item.total_amount || 0,
         totalProfit: item.total_profit || 0,
+        totalQuantity: item.order_item_count,
         createdAt: item.created_at ? item.created_at.replace('T', ' ').substring(0, 16) : '-'
       }));
 

@@ -67,3 +67,9 @@ export const i18nBehavior = Behavior({
     }
   }
 });
+
+// 6. 獲取當前語言對應的完整字典物件
+export function getLangDict(): Record<string, string> {
+  const activeLang = getAppLanguage();
+  return translations[activeLang] || translations['zh_CN'];
+}
