@@ -35,7 +35,9 @@ Component({
       if (pages.length > 1) {
         wx.navigateBack();
       } else {
-        wx.reSwitchTab ? wx.reSwitchTab({ url: '/pages/index/index' }) : wx.switchTab({ url: '/pages/index/index' });
+        wx.switchTab({
+          url: '/pages/index/index'
+        });
       }
     }
   }
