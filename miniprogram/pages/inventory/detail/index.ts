@@ -1,5 +1,6 @@
 import { i18nBehavior } from '../../../utils/i18n/i18n';
 import { request } from '../../../utils/request';
+import { formatToLocalTime } from '../../../utils/user';
 
 // 狀態碼映射：1-在庫, 2-已售出, 3-維修中, 4-已報廢
 const STATUS_MAP: Record<number, string> = {
@@ -55,7 +56,7 @@ Page({
             purchaseOrderId: raw.purchase_order_sn || `-`,
             supplierName: raw.supplier_name || '未知供應商',
             supplierPhone: raw.supplier_phone || '-',
-            inboundDate: raw.in_stock_time || '-'
+            inboundDate: formatToLocalTime(raw.in_stock_time)
           }
         });
       } else {

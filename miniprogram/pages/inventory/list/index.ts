@@ -1,5 +1,6 @@
 import { i18nBehavior } from '../../../utils/i18n/i18n';
 import { request } from '../../../utils/request';
+import { formatToLocalTime } from '../../../utils/user';
 
 Page({
   behaviors: [i18nBehavior],
@@ -135,9 +136,7 @@ Page({
           type: (item.category === 1 || item.type === 'new') ? 'new' : 'used',
           costPrice: item.purchase_price || item.costPrice || '0.00',
           stock_age: ageDays,
-          inboundDate: item.in_stock_time 
-            ? item.in_stock_time.split(' ')[0] 
-            : (item.created_at ? item.created_at.split('T')[0] : '-')
+          inboundDate: formatToLocalTime(item.in_stock_time) 
         };
       });
 

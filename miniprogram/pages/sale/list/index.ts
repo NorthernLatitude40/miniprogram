@@ -1,5 +1,7 @@
 import { i18nBehavior } from '../../../utils/i18n/i18n';
 import { request } from '../../../utils/request';
+import { formatToLocalTime } from '../../../utils/user';
+
 
 Page({
   behaviors: [i18nBehavior],
@@ -107,7 +109,7 @@ Page({
         totalAmount: item.total_amount || 0,
         totalProfit: item.total_profit || 0,
         totalQuantity: item.order_item_count,
-        createdAt: item.created_at ? item.created_at.replace('T', ' ').substring(0, 16) : '-'
+        createdAt: formatToLocalTime(item.created_at)
       }));
 
       const newList = this.data.page === 1 ? fetchedList : [...this.data.saleList, ...fetchedList];

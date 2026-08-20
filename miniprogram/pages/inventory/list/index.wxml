@@ -96,7 +96,7 @@
           <view class="row flex-between">
             <view class="sub-row">
               <text class="label">入庫時間：</text>
-              <text class="val">{{ item.inboundDate || item.in_stock_time || '-' }}</text>
+              <text class="val">{{ item.inboundDate }}</text>
             </view>
             <!-- 庫齡展示 -->
             <view class="sub-row age-box" wx:if="{{ item.stock_age !== undefined }}">

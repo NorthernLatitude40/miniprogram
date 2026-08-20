@@ -1,6 +1,7 @@
 import { i18nBehavior } from '../../../utils/i18n/i18n';
 // 假設你有封裝好的 request 工具，如果沒有請替換為 wx.request
 import { request } from '../../../utils/request'; 
+import { formatToLocalTime } from '../../../utils/user';
 
 Page({
   behaviors: [i18nBehavior],
@@ -40,7 +41,7 @@ Page({
           supplierName: raw.partner_name || raw.supplierName || '未知供應商',
           supplierPhone: raw.partner_phone || raw.supplierPhone || '-',
           totalAmount: raw.total_amount ?? raw.purchase_price ?? 0,
-          createdAt: raw.created_at || raw.createdAt || '',
+          createdAt: formatToLocalTime(raw.created_at) || formatToLocalTime(raw.createdAt) || '',
           // 處理設備清單 details/items
           items: (raw.items || raw.details || []).map((item: any) => ({
             modelName: item.model_name || item.title || item.name || '未命名商品',

@@ -1,5 +1,6 @@
 import { i18nBehavior } from '../../../utils/i18n/i18n';
 import { request } from '../../../utils/request';
+import { formatToLocalTime } from '../../../utils/user';
 
 Page({
   behaviors: [i18nBehavior],
@@ -35,7 +36,7 @@ Page({
           customerName: raw.partner_name || '散客',
           customerPhone: raw.partner_phone || '-',
           totalAmount: raw.total_amount ?? 0,
-          createdAt: raw.created_at || '',
+          createdAt: formatToLocalTime(raw.created_at) || '',
           devices: (raw.devices || []).map((item: any) => ({
             modelName: item.model_name || '未知機型',
             imei: item.imei || item.sn || '-',

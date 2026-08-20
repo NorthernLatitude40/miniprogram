@@ -129,12 +129,15 @@ export const request = <T = any>(options: RequestOptions): Promise<T> => {
       authHeader['X-Staff-Id'] = currentStaffId;
     }
 
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai';
+
     // 🌟 4. 发送微信网络请求
     const requestTask = wx.request({
       url: buildUrl(BASE_URL, options.url),
       method: options.method || 'GET',
       data: options.data,
       header: {
+        'X-Timezone': userTimezone,
         ...authHeader,
         ...options.header,
       },

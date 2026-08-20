@@ -168,3 +168,38 @@ export function searchPartner(phone: string): Promise<PartnerSearchResult | null
     throw err;
   });
 }
+
+
+/**
+ * 將 ISO/UTC 時間字串轉換為本地時區格式 (YYYY-MM-DD HH:mm)
+ * @param timeStr ISO 格式的時間字串
+ * @param fallback 為空或解析失敗時的預設回傳值，預設為 '-'
+ */
+export function formatToLocalTime(
+  isoString: string | null | undefined,
+  fallback: string = '-'
+): string {
+  if (!isoString) return fallback;
+
+  let formattedString = isoString;
+
+  // 1. 處理帶空白的情況，將空白換成 'T' (如 "2026-08-20 13:46:00" -> "2026-08-20T13:46:00")
+  formattedString = formattedString.replace(' ', 'T');
+
+  // 2. 關鍵：如果字串結尾沒有 Z 也沒有 +00:00 等時區標記，強制補上 Z
+  if (!formattedString.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(formattedString)) {
+    formattedString += 'Z';
+  }
+
+  const date = new Date(formattedString);
+  
+  if (isNaN(date.getTime())) return fallback;
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}

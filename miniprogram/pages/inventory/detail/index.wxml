@@ -36,7 +36,7 @@
     <view class="info-list">
       <view class="info-item">
         <text class="label">關聯進貨單</text>
-        <text class="val link">{{ device.purchaseOrderId }}</text>
+        <text class="val link">{{ device.id }}</text>
       </view>
       <view class="info-item">
         <text class="label">供應商</text>

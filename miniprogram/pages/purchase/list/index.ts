@@ -1,5 +1,6 @@
 import { i18nBehavior } from '../../../utils/i18n/i18n';
 import { request } from '../../../utils/request';
+import { formatToLocalTime } from '../../../utils/user';
 
 Page({
   behaviors: [i18nBehavior],
@@ -88,12 +89,12 @@ Page({
         id: item.id || item.purchase_no,
         title: item.title,
         type: item.category === 1 ? 'new' : 'used',
-        status: item.status === 2 ? 'completed' : 'pending',
+        status: item.status,
         supplierName: item.partner_name || '未知供應商',
         supplierPhone: item.partner_phone || '-',
         totalAmount: item.total_amount || 0,
         itemCount: item.item_count || item.quantity || 0,
-        createdAt: item.created_at ? item.created_at.replace('T', ' ').substring(0, 16) : '-'
+        createdAt: item.created_at ? formatToLocalTime(item.created_at) : '-'
       }));
       const newList = this.data.page === 1 ? fetchedList : [...this.data.purchaseList, ...fetchedList];
 
