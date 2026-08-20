@@ -1,55 +1,24 @@
 <view class="app-container">
   
-  <!-- 🌟 1. 引入自定義導航欄組件 -->
+  <!-- 1. 自訂導航欄組件 -->
   <nav-bar title="{{shopName}}" showBack="{{false}}"></nav-bar>
 
-  <!-- 頂部區域 -->
+  <!-- 2. 頂部區域 -->
   <view class="header-section">
 
-    <!-- 🌟 切換至核心業務版入口按鈕 -->
+    <!-- 切換至核心業務版入口按鈕 -->
     <view class="layout-switch-btn" bindtap="goToBusinessPage">
       <text>📊 {{t.switch_to_business_ver || '切換至核心業務版'}} ❯</text>
     </view>
-    
-    <!-- 收支概覽看板 -->
-    <view class="card header-card">
-      <!-- 🌟 情況 A：有權限 (Admin / Owner / Manager) -> 正常展示數據看板 -->
-      <block wx:if="{{userRole === 'admin' || userRole === 'owner' || userRole === 'manager'}}">
-        <view class="card-header-bar">
-          <text class="card-title">{{t.today_overview || '今日經營概覽'}}</text>
-          <text class="role-badge {{userRole}}">{{userRole === 'admin' ? (t.role_admin || '超級管理員') : (t.role_manager || '店長')}}</text>
-        </view>
+  
+    <!-- 🌟 2. 抽離後的收支概覽看板組件 -->
+    <header-card 
+      userRole="{{userRole}}" 
+      stats="{{stats}}" 
+      t="{{t}}" 
+    />
 
-        <view class="stats-grid">
-          <view class="stat-item">
-            <text class="stat-label">{{t.today_gross_profit || '今日毛利(元)'}}</text>
-            <text class="stat-value profit">¥ {{stats.profit}}</text>
-          </view>
-          <view class="stat-item">
-            <text class="stat-label">{{t.today_income || '今日收入(元)'}}</text>
-            <text class="stat-value">¥ {{stats.income || 0}}</text>
-          </view>
-          <view class="stat-item">
-            <text class="stat-label">{{t.today_expense || '今日支出(元)'}}</text>
-            <text class="stat-value">¥ {{stats.expense || 0}}</text>
-          </view>
-          <view class="stat-item">
-            <text class="stat-label">{{t.in_stock_devices || '在庫設備(台)'}}</text>
-            <text class="stat-value count">{{stats.stockCount || 0}}</text>
-          </view>
-        </view>
-      </block>
-      <!-- 🌟 情況 B：無權限 (Staff) -> 替換為卡通 Banner -->
-      <view class="no-perm-banner" wx:else>
-        <image class="banner-avatar" src="/assets/logo.png" mode="aspectFit"></image>
-        <view class="banner-content">
-          <view class="banner-title">{{t.ai_assistant_ready || 'AI 店務助手已就緒 🤖'}}</view>
-          <view class="banner-sub">{{t.ai_assistant_sub_tip || '請在下方對話框直接發送：“收了一台 iPhone 13 成本 1800” 或 “賣出 iPhone 12 價格 2200” 即可快速開單！'}}</view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 🤖 AI 標題橫幅 -->
+    <!-- AI 標題橫幅 -->
     <view class="ai-banner">
       <view class="ai-title">
         <text class="ai-icon">🤖</text>
@@ -57,251 +26,21 @@
       </view>
       <text class="badge">{{t.ai_housekeeper_badge || '自然語言開單/查帳'}}</text>
     </view>
+    
   </view>
 
-  <!-- 2. 中間 AI 聊天主區域 -->
-  <view class="chat-container">
-    <scroll-view 
-      class="chat-list" 
-      scroll-y="true" 
-      scroll-into-view="{{lastMsgId}}"
-      scroll-with-animation="true"
-      enhanced="true"
-      bounces="true"
-      show-scrollbar="true"
-    >
-      <block wx:for="{{messages}}" wx:key="index">
-        
-        <!-- 用戶消息 -->
-        <view id="msg-{{index}}" class="msg-item user" wx:if="{{item.role === 'user'}}">
-          <view class="bubble">{{item.content}}</view>
-        </view>
+  <!-- 3. 聊天主體組件（包含列表與底部輸入） -->
+  <chat-box 
+      messages="{{messages}}"
+      lastMsgId="{{lastMsgId}}"
+      stockList="{{stockList}}"
+      loading="{{isLoading}}"
+      userRole="{{userRole}}"
+      stats="{{stats}}"
+      bind:sendMessage="onSendMessage"
+      bind:confirmAdd="confirmAdd"
+      bind:confirmSell="confirmSell"
+      bind:selectStockDevice="onSelectStockDevice"
+    />
 
-        <!-- 機器人回復 -->
-        <view id="msg-{{index}}" class="msg-item robot" wx:if="{{item.role === 'assistant'}}">
-          <view class="robot-content">
-            <view class="bubble" wx:if="{{item.content}}">{{item.content}}</view>
-
-            <!-- 解析卡片 -->
-            <block wx:if="{{item.parsedData}}">
-              
-              <!-- 入庫卡片 -->
-              <view class="parsed-card card-in" wx:if="{{item.parsedData.type === 'in' || item.parsedData.action === 'in'}}">
-                <view class="card-title title-in">📦 {{t.device_parsed_in || '設備解析成功 (入庫)'}}</view>
-                <view class="card-item">{{t.model || '型號'}}：{{item.parsedData.model || item.parsedData.model_or_id}}</view>
-                <view class="card-item">{{t.cost || '成本'}}：￥{{item.parsedData.cost || item.parsedData.cost_price}}</view>
-                <view class="card-item">{{t.supplier_name || '客戶名稱'}}：￥{{item.parsedData.supplier_name}}</view>
-                <view class="card-item">{{t.supplier_phone || '客戶電話'}}：￥{{item.parsedData.supplier_phone}}</view>
-                <view class="card-item">{{t.product_type || '產品類型'}}：{{item.parsedData.product_type===1?'新機':'二手手機'}}</view>
-                <view class="card-item" wx:if="{{item.parsedData.notes}}">{{t.notes || '備註'}}：{{item.parsedData.notes}}</view>
-                
-                <button 
-                  class="confirm-btn btn-in {{item.isConfirmed ? 'btn-disabled' : ''}}" 
-                  size="mini" 
-                  disabled="{{item.isConfirmed}}"
-                  bindtap="confirmAdd" 
-                  data-info="{{item.parsedData}}"
-                  data-index="{{index}}"
-                >
-                  {{item.isConfirmed ? (t.stock_in_completed || '已完成入庫') : (t.confirm_stock_in || '確認入庫')}}
-                </button>
-              </view>
-
-              <!-- 出售卡片 (帶模糊代詞校驗與手動修正) -->
-              <view class="parsed-card card-out" wx:elif="{{item.parsedData.type === 'out' || item.parsedData.action === 'sell'}}">
-                <view class="card-title title-out">
-                  <text>💰 {{t.device_parsed_out || '設備解析成功 (出售)'}}</text>
-                  <text class="warn-badge" wx:if="{{item.parsedData.is_pronoun}}">{{t.check_device || '請核對設備'}}</text>
-                </view>
-
-                <!-- 設備 ID 獨立展示區 -->
-                <view class="card-item" wx:if="{{item.parsedData.device_id || item.parsedData.id || (item.parsedData.selected_device && item.parsedData.selected_device.id)}}">
-                  <text class="item-label">{{t.device_id || '設備 ID'}}：</text>
-                  <text class="device-id-badge">#{{item.parsedData.device_id || item.parsedData.id || item.parsedData.selected_device.id}}</text>
-                </view>
-
-                <!-- 型號展示與手動修改區 -->
-                <view class="card-item model-select-row">
-                  <text class="item-label">{{t.model || '型 號'}}：</text>
-                  
-                  <text class="model-name" wx:if="{{!item.parsedData.is_pronoun}}">{{item.parsedData.model || item.parsedData.title}}</text>
-                  
-                  <view class="pronoun-picker-wrap" wx:else>
-                    <picker 
-                      bindchange="onSelectStockDevice" 
-                      data-msg-index="{{index}}" 
-                      range="{{stockList}}" 
-                      range-key="display_name"
-                    >
-                      <view class="picker-trigger {{item.parsedData.selected_device ? 'selected' : 'unselected'}}">
-                        <text>{{item.parsedData.selected_device ? item.parsedData.selected_device.model || item.parsedData.selected_device.title : (t.select_stock_device_warn || '⚠️ 關聯模糊，請點擊選擇庫存設備')}}</text>
-                        <text class="arrow-down">▼</text>
-                      </view>
-                    </picker>
-                  </view>
-                </view>
-
-                <!-- 售價信息 -->
-                <view class="card-item">
-                  <text class="item-label">{{t.sell_price || '售 價'}}：</text>
-                  <text class="price-text">￥{{item.parsedData.price || item.parsedData.sell_price}}</text>
-                </view>
-
-                <!-- 備註信息 -->
-                <view class="card-item" wx:if="{{item.parsedData.notes}}">
-                  <text class="item-label">{{t.notes || '備 註'}}：</text>
-                  <text class="notes-text">{{item.parsedData.notes}}</text>
-                </view>
-
-                <!-- 確認按鈕 -->
-                <button 
-                  class="confirm-btn btn-out {{item.isConfirmed || (item.parsedData.is_pronoun && !item.parsedData.selected_device) ? 'btn-disabled' : ''}}" 
-                  size="mini" 
-                  disabled="{{item.isConfirmed || (item.parsedData.is_pronoun && !item.parsedData.selected_device)}}"
-                  bindtap="confirmSell" 
-                  data-info="{{item.parsedData}}"
-                  data-index="{{index}}"
-                >
-                  {{item.isConfirmed ? (t.stock_out_completed || '已完成出庫') : (item.parsedData.is_pronoun && !item.parsedData.selected_device ? (t.select_device_first || '請先選擇對應設備') : (t.confirm_sell_out || '確認出售/出庫'))}}
-                </button>
-              </view>
-
-              <!-- 報表卡片 -->
-              <view class="parsed-card card-report" wx:elif="{{item.parsedData.action === 'query_report'}}">
-                <view class="card-title title-report">
-                  <text>📊 {{item.parsedData.time_range_text || (t.business || '經營')}}{{t.report_overview || '報表概覽'}}</text>
-                </view>
-                <view class="report-grid">
-                  <view class="report-item highlight">
-                    <text class="report-label">{{t.sales_gross_profit || '銷售毛利'}}</text>
-                    <text class="report-val profit">￥{{item.parsedData.report.profit || 0}}</text>
-                  </view>
-                  <view class="report-item">
-                    <text class="report-label">{{t.sales_count || '出售台數'}}</text>
-                    <text class="report-val">{{item.parsedData.report.sales_count || 0}} {{t.unit_units || '台'}}</text>
-                  </view>
-                  <view class="report-item">
-                    <text class="report-label">{{t.operating_income || '營業收入'}}</text>
-                    <text class="report-val">￥{{item.parsedData.report.income || 0}}</text>
-                  </view>
-                  <view class="report-item">
-                    <text class="report-label">{{t.purchase_expense || '進貨支出'}}</text>
-                    <text class="report-val">￥{{item.parsedData.report.expense || 0}}</text>
-                  </view>
-                </view>
-              </view>
-
-              <!-- 庫存卡片 -->
-              <view class="parsed-card card-stock" wx:elif="{{item.parsedData.action === 'query_stock'}}">
-                <view class="card-title title-stock">
-                  <text>🔍 {{t.stock_query_result || '庫存查詢結果'}}</text>
-                  <text class="stock-badge">{{t.total || '共'}} {{item.parsedData.total_count || 0}} {{t.unit_units || '台'}}</text>
-                </view>
-
-                <view class="empty-tip" wx:if="{{!item.parsedData.items || item.parsedData.items.length === 0}}">
-                  {{t.no_stock_found_tip || '未找到相關的在庫設備'}}
-                </view>
-
-                <view class="stock-list" wx:else>
-                  <block wx:for="{{item.parsedData.items}}" wx:key="id" wx:for-item="stock">
-                    <view class="stock-item">
-                      <view class="stock-main">
-                        <text class="stock-title">{{stock.model}}</text>
-                        <view class="stock-tags">
-                          <text class="tag spec-tag">{{stock.spec || (t.standard || '標準')}}</text>
-                          <text class="tag id-tag">ID: {{stock.id}}</text>
-                        </view>
-                      </view>
-                      <view class="stock-price-info">
-                        <text class="stock-cost">{{t.cost || '成本'}} ￥{{stock.cost}}</text>
-                        <text class="stock-qty" wx:if="{{stock.stock_quantity > 1}}">{{t.stock || '庫存'}}: {{stock.stock_quantity}}{{t.unit_units || '台'}}</text>
-                      </view>
-                    </view>
-                  </block>
-                </view>
-              </view>
-
-              <!-- 歷史明細卡片 -->
-              <view class="parsed-card card-universal" wx:elif="{{item.parsedData.action === 'universal_query'}}">
-                <view class="card-title title-universal">
-                  <text>📋 {{t.history_query_result || '歷史明細檢索結果'}}</text>
-                  <text class="stock-badge">{{t.total || '共'}} {{item.parsedData.total_count || 0}} {{t.unit_items || '筆'}}</text>
-                </view>
-
-                <view class="empty-tip" wx:if="{{!item.parsedData.items || item.parsedData.items.length === 0}}">
-                  {{t.no_history_records || '暫無相關的歷史明細記錄'}}
-                </view>
-
-                <view class="stock-list" wx:else>
-                  <block wx:for="{{item.parsedData.items}}" wx:key="index" wx:for-item="record">
-                    <view class="stock-item">
-                      <view class="stock-main">
-                        <text class="stock-title">{{record.model || record.category || record.sn || (t.detail_record || '明細記錄')}}</text>
-                        <view class="stock-tags">
-                          <text class="tag spec-tag" wx:if="{{record.spec}}">{{record.spec}}</text>
-                          <text class="tag id-tag" wx:if="{{record.payment_method}}">{{record.payment_method}}</text>
-                          <text class="tag id-tag" wx:if="{{record.time}}">{{record.time}}</text>
-                        </view>
-                      </view>
-                      
-                      <view class="stock-price-info">
-                        <text class="stock-cost" wx:if="{{record.purchase_price !== undefined}}">￥{{record.purchase_price}}</text>
-                        <text class="stock-cost" wx:elif="{{record.amount !== undefined}}">￥{{record.amount}}</text>
-                        <text class="stock-qty" wx:if="{{record.type}}">{{record.type}}</text>
-                      </view>
-                    </view>
-                  </block>
-                </view>
-              </view>
-
-            </block>
-          </view>
-        </view>
-
-      </block>
-      
-      <!-- 底部墊高塊 -->
-      <view style="height: 30rpx; width: 100%;"></view>
-    </scroll-view>
-
-    <!-- 3. 底部輸入與常用業務控制欄 -->
-    <view class="chat-footer">
-      <view class="chat-input-row">
-        <!-- 常用業務控制按鈕 -->
-        <view class="menu-toggle-btn {{showMenu ? 'active' : ''}}" bindtap="toggleMenu">
-          <text class="toggle-icon">🛠️</text>
-          <text class="toggle-text">{{t.business || '業務'}}</text>
-        </view>
-
-        <!-- 輸入框 -->
-        <input class="input" value="{{inputMsg}}" bindinput="onInput" placeholder="{{t.input_placeholder || '輸入開單/估價/查帳指令...'}}" confirm-type="send" bindconfirm="sendToAgent" />
-        
-        <!-- 發送按鈕 -->
-        <button class="send-btn" type="primary" size="mini" bindtap="sendToAgent">{{t.send || '發送'}}</button>
-      </view>
-
-      <!-- 點擊後彈出的常用業務抽屜菜單 -->
-      <view class="menu-drawer" wx:if="{{showMenu}}">
-        <view class="menu-grid">
-          <view class="menu-item">
-            <text class="menu-icon">📱</text>
-            <text class="menu-text">{{t.secondhand_stock || '二手庫存'}}</text>
-          </view>
-          <view class="menu-item">
-            <text class="menu-icon">📦</text>
-            <text class="menu-text">{{t.new_device_in_out || '新機出入庫'}}</text>
-          </view>
-          <view class="menu-item">
-            <text class="menu-icon">🔧</text>
-            <text class="menu-text">{{t.repair_order || '維修開單'}}</text>
-          </view>
-          <view class="menu-item" bindtap="goToMy">
-            <text class="menu-icon">👤</text> 
-            <text class="menu-text">{{t.my || '我的'}}</text>
-          </view>
-        </view>
-      </view>
-    </view>
-
-  </view>
 </view>

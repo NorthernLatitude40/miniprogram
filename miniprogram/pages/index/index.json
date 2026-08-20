@@ -1,6 +1,8 @@
 {
   "navigationStyle": "custom",
   "usingComponents": {
-    "nav-bar": "/components/nav-bar/index"
+    "nav-bar": "/components/nav-bar/index",
+    "header-card": "/components/header-card/index",
+    "chat-box": "/components/chat-box/index"
   }
 }

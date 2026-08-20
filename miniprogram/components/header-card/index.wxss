@@ -1,13 +1,15 @@
 page {
+  background-color: #f4f5f7;
   height: 100vh;
   overflow: hidden;
 }
 
+/* 整体 Flex 容器 */
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* 顶部卡片区域 */
@@ -554,12 +556,4 @@ button[disabled].confirm-btn {
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
-}
-
-chat-box {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0; /* 🌟 關鍵：讓 chat-box 自動占滿剩餘所有高度 */
-  overflow: hidden;
 }

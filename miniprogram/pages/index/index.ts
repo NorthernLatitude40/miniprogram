@@ -1,7 +1,7 @@
 // pages/index/index.ts
 import { request } from '../../utils/request';
 import { fetchDashboardStats } from '../../utils/user';
-import { i18nBehavior } from '../../utils/i18n/i18n';
+import { i18nBehavior, t } from '../../utils/i18n/i18n';
 
 // 1. 在庫設備條目接口 (擴充 UI 展示欄位)
 interface StockItem {
@@ -105,6 +105,7 @@ interface PageCustomMethods {
   setLanguage: (lang: string) => void;
   updateLanguage: () => void;
   tFormat: (key: any, params?: Record<string, string>) => string;
+  initWelcomeMessage: () => void;
 }
 
 // 核心修復：定義為動態 Getter 函數，避免頂層靜態變量無法更新快取的問題
@@ -132,7 +133,7 @@ Page<PageData, PageCustomMethods>({
     showMenu: false,
     inputMsg: '',
     lastMsgId: '',
-    messages: [],
+    messages: [] as ChatMessage[],
     stockList: [],
   },
 
@@ -148,6 +149,8 @@ Page<PageData, PageCustomMethods>({
 
     // 計算導航欄總高度（避讓佔位用）
     const navBarHeight = menuButton.bottom ? (menuButton.bottom + (menuTop - statusBarHeight)) : (statusBarHeight + 44);
+
+    this.initWelcomeMessage();
 
     this.setData({
       statusBarHeight: statusBarHeight,
@@ -194,6 +197,25 @@ Page<PageData, PageCustomMethods>({
 
     // 🌟 加載看板統計數據並給 stats 賦值
     this.loadDashboardStats();
+  },
+
+  // 初始化 AI 歡迎語
+  initWelcomeMessage() {
+    const welcomeMsg: ChatMessage = {
+      role: 'assistant',
+      // 🌟 直接從多語言字典取出文字，或提供預設值
+      content: t('welcome_chat_tip') || '你好！我是 AI 店務助手，請輸入開單或查帳指令。'
+    };
+
+    this.setData({
+      messages: [welcomeMsg]
+    });
+  },
+
+  // 🌟 切換語言時的響應（如果你的項目支援運行時切換語言）
+  onLanguageChange() {
+    // 重新載入多語言文字，更新 UI
+    this.initWelcomeMessage();
   },
 
   // 🌟 核心賦值方法：獲取看板數據並更新 setData({ stats })
@@ -363,6 +385,15 @@ Page<PageData, PageCustomMethods>({
   onSelectDeviceClarify(selectedDevice: any) {
     const clarifyText = this.tFormat('select_device_clarify', { id: selectedDevice.id }) || `選 ID ${selectedDevice.id} 這台`;
     this.sendToAgent(clarifyText);
+  },
+
+  // 1. 接收組件傳上來的文字
+  onSendMessage(e: WechatMiniprogram.CustomEvent<{ text: string }>) {
+    const text = e.detail.text;
+    if (text) {
+      // 2. 調用原本完整的 API sendToAgent
+      this.sendToAgent(text);
+    }
   },
 
   // 發送消息邏輯（支持傳入 overrideText 覆蓋 inputMsg）
@@ -573,7 +604,8 @@ Page<PageData, PageCustomMethods>({
   },
 
   confirmSell(e: WechatMiniprogram.CustomEvent) {
-    const { info, index } = e.currentTarget.dataset as { info: ParsedDeviceData; index: number };
+    console.log('3[AI-CARD] 點擊了出售按鈕，當前 info:', e.detail);
+    const { info, index } = e.detail as { info: ParsedDeviceData; index: number };
 
     if (typeof index === 'number' && this.data.messages[index]?.isConfirmed) {
       return;

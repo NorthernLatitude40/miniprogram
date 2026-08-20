@@ -1,0 +1,49 @@
+<view class="chat-container">
+  <scroll-view 
+    class="chat-list" 
+    scroll-y="true" 
+    scroll-into-view="{{lastMsgId}}"
+    scroll-with-animation="true"
+    enhanced="true"
+    bounces="true"
+    show-scrollbar="true"
+  >
+    <block wx:for="{{messages}}" wx:key="index">
+      <!-- 用戶消息 -->
+      <view id="msg-{{index}}" class="msg-item user" wx:if="{{item.role === 'user'}}">
+        <view class="bubble">{{item.content}}</view>
+      </view>
+
+      <!-- 機器人回復 -->
+      <view id="msg-{{index}}" class="msg-item robot" wx:if="{{item.role === 'assistant'}}">
+        <view class="robot-content">
+          <view class="bubble" bindtap="onCopyText" data-text="{{item.content}}" wx:if="{{item.content}}">
+            <text class="bubble-text" selectable>{{item.content}}</text>
+          </view>
+
+          <!-- AI 解析卡片 -->
+          <ai-card 
+            wx:if="{{item.parsedData}}" 
+            info="{{item.parsedData}}" 
+            index="{{index}}" 
+            isConfirmed="{{item.isConfirmed}}" 
+            stockList="{{stockList}}"
+            bind:confirmAdd="onConfirmAdd"
+            bind:confirmSell="onConfirmSell"
+            bind:selectStockDevice="onSelectStockDevice"
+          />
+        </view>
+      </view>
+    </block>
+    
+    <view style="height: 30rpx; width: 100%;"></view>
+  </scroll-view>
+
+  <!-- 嵌套底部輸入欄 -->
+  <chat-footer 
+    loading="{{loading}}"
+    userRole="{{userRole}}"
+    stats="{{stats}}"
+    bind:sendMessage="onSendMessage"
+  />
+</view>

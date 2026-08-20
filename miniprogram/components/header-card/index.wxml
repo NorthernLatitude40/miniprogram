@@ -1,0 +1,37 @@
+<view class="card header-card">
+  <!-- 🌟 情況 A：有權限 (Admin / Owner / Manager) -> 正常展示數據看板 -->
+  <block wx:if="{{userRole === 'admin' || userRole === 'owner' || userRole === 'manager'}}">
+    <view class="card-header-bar">
+      <text class="card-title">{{t.today_overview || '今日經營概覽'}}</text>
+      <text class="role-badge {{userRole}}">{{userRole === 'admin' ? (t.role_admin || '超級管理員') : (t.role_manager || '店長')}}</text>
+    </view>
+
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-label">{{t.today_gross_profit || '今日毛利(元)'}}</text>
+        <text class="stat-value profit">¥ {{stats.profit || 0}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">{{t.today_income || '今日收入(元)'}}</text>
+        <text class="stat-value">¥ {{stats.income || 0}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">{{t.today_expense || '今日支出(元)'}}</text>
+        <text class="stat-value">¥ {{stats.expense || 0}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">{{t.in_stock_devices || '在庫設備(台)'}}</text>
+        <text class="stat-value count">{{stats.stockCount || 0}}</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 🌟 情況 B：無權限 (Staff) -> 替換為卡通 Banner -->
+  <view class="no-perm-banner" wx:else>
+    <image class="banner-avatar" src="/assets/logo.png" mode="aspectFit"></image>
+    <view class="banner-content">
+      <view class="banner-title">{{t.ai_assistant_ready || 'AI 店務助手已就緒 🤖'}}</view>
+      <view class="banner-sub">{{t.ai_assistant_sub_tip || '請在下方對話框直接發送：“收了一台 iPhone 13 成本 1800” 或 “賣出 iPhone 12 價格 2200” 即可快速開單！'}}</view>
+    </view>
+  </view>
+</view>

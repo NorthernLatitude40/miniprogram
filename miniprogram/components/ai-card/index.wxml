@@ -1,0 +1,105 @@
+<view class="ai-card-wrapper" wx:if="{{info && info.action}}">
+  <!-- 1. 卡片頭部標題 -->
+  <view class="card-header">
+    <text class="card-tag">
+      {{info.action === 'in' ? '📦 入庫確認' : (info.action === 'sell' ? '💰 銷售確認' : (info.action === 'query_report' ? '📊 經營報表' : (info.action === 'query_stock' ? '🔍 庫存查詢' : '📋 歷史明細')))}}
+    </text>
+    <text class="copy-link" catchtap="copyCardInfo">複製卡片內容</text>
+  </view>
+
+  <!-- 2. 卡片內容區塊 -->
+  <view class="card-content">
+
+    <!-- 情況 A：入庫 / 銷售 卡片 -->
+    <block wx:if="{{info.action === 'in' || info.action === 'sell'}}">
+      <view wx:if="{{info.is_pronoun}}" class="pronoun-selector">
+        <text class="warn-tip">⚠️ AI 未指明具體設備，請選擇：</text>
+        <picker bindchange="onSelectStockDevice" range="{{stockList}}" range-key="display_name">
+          <button size="mini" type="default">
+            {{info.selected_device ? info.selected_device.display_name : '點擊關聯庫存設備'}}
+          </button>
+        </picker>
+      </view>
+
+      <view class="info-row">
+        <text class="label">型號：</text>
+        <text class="value">{{info.selected_device ? (info.selected_device.title || info.selected_device.model) : (info.model || info.model_or_id)}}</text>
+      </view>
+
+      <view class="info-row" wx:if="{{info.spec}}">
+        <text class="label">規格：</text>
+        <text class="value">{{info.spec}}</text>
+      </view>
+
+      <view class="info-row" wx:if="{{info.sn || info.sn_code}}">
+        <text class="label">串號：</text>
+        <text class="value">{{info.sn || info.sn_code}}</text>
+      </view>
+
+      <view class="info-row" wx:if="{{info.action === 'sell'}}">
+        <text class="label">售價：</text>
+        <text class="value highlight">¥{{info.sell_price || info.price || 0}}</text>
+      </view>
+
+      <view class="info-row" wx:if="{{info.action === 'in'}}">
+        <text class="label">成本：</text>
+        <text class="value highlight">¥{{info.cost || info.cost_price || 0}}</text>
+      </view>
+
+      <view class="info-row" wx:if="{{info.customer_name}}">
+        <text class="label">客戶：</text>
+        <text class="value">{{info.customer_name}} {{info.customer_phone ? '(' + info.customer_phone + ')' : ''}}</text>
+      </view>
+    </block>
+
+    <!-- 情況 B：庫存查詢卡片 (query_stock) -->
+    <block wx:elif="{{info.action === 'query_stock'}}">
+      <view class="info-row result-count-row">
+        <text class="label">查詢結果：</text>
+        <text class="value highlight">共 {{info.total_count || 0}} 台</text>
+      </view>
+
+      <view class="stock-card-list" wx:if="{{info.items && info.items.length > 0}}">
+        <view class="stock-card-item" wx:for="{{info.items}}" wx:key="id">
+          <view class="stock-item-header">
+            <text class="stock-item-id">#{{item.id}}</text>
+            <text class="stock-item-model">{{item.model}}</text>
+          </view>
+          <view class="stock-item-meta">
+            <text class="stock-item-spec">{{item.spec || '標準'}}</text>
+            <text class="stock-item-cost">￥{{item.cost}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="empty-tip" wx:else>未找到相關設備庫存</view>
+    </block>
+
+    <!-- 情況 C：報表卡片 (query_report) -->
+    <block wx:elif="{{info.action === 'query_report'}}">
+      <view class="info-row">
+        <text class="label">毛利：</text>
+        <text class="value highlight">￥{{info.report.profit || 0}}</text>
+      </view>
+      <view class="info-row">
+        <text class="label">銷量：</text>
+        <text class="value">{{info.report.sales_count || 0}} 台</text>
+      </view>
+    </block>
+
+  </view>
+
+  <!-- 3. 操作按鈕區 -->
+  <view class="card-footer" wx:if="{{info.action === 'in' || info.action === 'sell'}}">
+    <block wx:if="{{info.action === 'in'}}">
+      <button disabled="{{isConfirmed}}" bindtap="onConfirmAdd" type="primary" size="mini">
+        {{isConfirmed ? '已入庫' : '確認入庫'}}
+      </button>
+    </block>
+
+    <block wx:if="{{info.action === 'sell'}}">
+      <button disabled="{{isConfirmed || (info.is_pronoun && !info.selected_device)}}" bindtap="onConfirmSell" type="warn" size="mini">
+        {{isConfirmed ? '已出售' : (info.is_pronoun && !info.selected_device ? '請先選擇設備' : '確認出售')}}
+      </button>
+    </block>
+  </view>
+</view>

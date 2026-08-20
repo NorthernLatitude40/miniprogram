@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "ai-card": "/components/ai-card/index",
+    "chat-footer": "/components/chat-footer/index"
+  }
+}

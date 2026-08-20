@@ -1,0 +1,58 @@
+<view class="chat-footer">
+  <!-- 輸入列 -->
+  <view class="chat-input-row">
+    <!-- 常用業務控制按鈕 -->
+    <view class="menu-toggle-btn {{showMenu ? 'active' : ''}}" bindtap="toggleMenu">
+      <text class="toggle-icon">🛠️</text>
+      <text class="toggle-text">{{t.business || '業務'}}</text>
+    </view>
+
+    <!-- 輸入框 -->
+    <input 
+      class="input" 
+      value="{{inputMsg}}" 
+      bindinput="onInput" 
+      placeholder="{{t.input_placeholder || '輸入開單/估價/查帳指令...'}}" 
+      confirm-type="send" 
+      bindconfirm="sendToAgent" 
+    />
+    
+    <!-- 發送按鈕 -->
+    <button class="send-btn" type="primary" size="mini" bindtap="sendToAgent" disabled="{{loading}}">
+      {{loading ? '...' : (t.send || '發送')}}
+    </button>
+  </view>
+
+  <!-- 點擊後彈出的完整抽屜菜單 -->
+  <view class="menu-drawer" wx:if="{{showMenu}}">
+
+    <!-- 🛠️ 2. 常用業務功能區 -->
+    <view class="menu-grid">
+      <view class="menu-item" bindtap="onMenuItemClick" data-text="查二手庫存">
+        <text class="menu-icon">📱</text>
+        <text class="menu-text">{{t.secondhand_stock || '二手庫存'}}</text>
+      </view>
+
+      <view class="menu-item" bindtap="onMenuItemClick" data-text="查新機庫存">
+        <text class="menu-icon">📦</text>
+        <text class="menu-text">{{t.new_device_in_out || '新機出入庫'}}</text>
+      </view>
+
+      <view class="menu-item" bindtap="onMenuItemClick" data-text="維修開單">
+        <text class="menu-icon">🔧</text>
+        <text class="menu-text">{{t.repair_order || '維修開單'}}</text>
+      </view>
+
+      <view class="menu-item" bindtap="onMenuItemClick" data-action="goToBusiness">
+        <text class="menu-icon">📊</text>
+        <text class="menu-text">{{t.business_center || '業務中心'}}</text>
+      </view>
+
+      <view class="menu-item" bindtap="onMenuItemClick" data-action="goToMy">
+        <text class="menu-icon">👤</text>
+        <text class="menu-text">{{t.my || '我的'}}</text>
+      </view>
+    </view>
+
+  </view>
+</view>
