@@ -12,6 +12,7 @@
 
     <!-- 情況 A：入庫 / 銷售 卡片 -->
     <block wx:if="{{info.action === 'in' || info.action === 'sell'}}">
+      <!-- 指代不清時的設備選擇器 -->
       <view wx:if="{{info.is_pronoun}}" class="pronoun-selector">
         <text class="warn-tip">⚠️ AI 未指明具體設備，請選擇：</text>
         <picker bindchange="onSelectStockDevice" range="{{stockList}}" range-key="display_name">
@@ -21,34 +22,54 @@
         </picker>
       </view>
 
+      <!-- 1. 型號 -->
       <view class="info-row">
         <text class="label">型號：</text>
         <text class="value">{{info.selected_device ? (info.selected_device.title || info.selected_device.model) : (info.model || info.model_or_id)}}</text>
       </view>
 
+      <!-- 2. 規格/成色 -->
       <view class="info-row" wx:if="{{info.spec}}">
         <text class="label">規格：</text>
         <text class="value">{{info.spec}}</text>
       </view>
 
-      <view class="info-row" wx:if="{{info.sn || info.sn_code}}">
+      <!-- 3. 串號/SN（支援單個字串或陣列列表展示） -->
+      <view class="info-row" wx:if="{{info.serials && info.serials.length > 0}}">
+        <text class="label">串號：</text>
+        <text class="value">{{info.serials.join(', ')}}</text>
+      </view>
+      <view class="info-row" wx:elif="{{info.sn || info.sn_code}}">
         <text class="label">串號：</text>
         <text class="value">{{info.sn || info.sn_code}}</text>
       </view>
 
+      <!-- 4. 價格顯示（根據動作動態切換） -->
       <view class="info-row" wx:if="{{info.action === 'sell'}}">
         <text class="label">售價：</text>
         <text class="value highlight">¥{{info.sell_price || info.price || 0}}</text>
       </view>
-
       <view class="info-row" wx:if="{{info.action === 'in'}}">
         <text class="label">成本：</text>
         <text class="value highlight">¥{{info.cost || info.cost_price || 0}}</text>
       </view>
 
-      <view class="info-row" wx:if="{{info.customer_name}}">
+      <!-- 5. 銷售對象：客戶資訊 -->
+      <view class="info-row" wx:if="{{info.action === 'sell' && (info.customer_name || info.customer_phone)}}">
         <text class="label">客戶：</text>
-        <text class="value">{{info.customer_name}} {{info.customer_phone ? '(' + info.customer_phone + ')' : ''}}</text>
+        <text class="value">{{info.customer_name || '未命名'}} {{info.customer_phone ? '(' + info.customer_phone + ')' : ''}}</text>
+      </view>
+
+      <!-- 6. 入庫來源：供應商/回收來源資訊 (對應 Tool 的 supplier_name & supplier_phone) -->
+      <view class="info-row" wx:if="{{info.action === 'in' && (info.supplier_name || info.supplier_phone)}}">
+        <text class="label">來源：</text>
+        <text class="value">{{info.supplier_name || '客戶'}} {{info.supplier_phone ? '(' + info.supplier_phone + ')' : ''}}</text>
+      </view>
+
+      <!-- 7. 備註描述 (包含顏色與成色說明) -->
+      <view class="info-row" wx:if="{{info.notes}}">
+        <text class="label">備註：</text>
+        <text class="value">{{info.notes}}</text>
       </view>
     </block>
 

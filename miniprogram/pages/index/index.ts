@@ -45,6 +45,7 @@ interface ParsedDeviceData {
   selected_device?: StockItem | null;
   supplier_name?: string;
   supplier_phone?: string;
+  partner_id?: string;
   product_type?: number
 }
 
@@ -523,7 +524,41 @@ Page<PageData, PageCustomMethods>({
         let mockMsg: ChatMessage = {
           role: 'assistant',
           content: (this.data as any).t?.debug_tip || '【調試提示】Python 後端未連接。若接通，系統將自動識別並生成卡片。',
-          parsedData: { type: 'in', action: 'in', model: 'iPhone 13 (演示數據)', cost: 1800, notes: '自動提取測試' },
+          parsedData: {
+            // 1. 動作與類型標誌
+            type: 'out',
+            action: 'sell',
+            product_type: 2, // 1-新機，2-二手機
+          
+            // 2. 設備基本資訊
+            model: 'iPhone 13 128G 黑色',
+            model_or_id: 'iPhone 13 128G 黑色',
+            sn_code: '358902110293841',
+            
+            // 3. 成本與金額 (同步補齊 cost 與 cost_price 相容欄位)
+            cost: 1800,
+            cost_price: 1800,
+            price: 0,
+            sell_price: 0,
+          
+            // 4. 供應商 / 回收客戶資訊
+            supplier_name: '張先生',
+            supplier_phone: '13800138000',
+            partner_id: '12', // 可留空，後端會自動創建或查詢綁定
+          
+            // 5. 備註與成色描述
+            notes: '顏色:黑色 | 自動提取測試，屏幕微劃痕，功能正常',
+          
+            // 6. 代詞防呆與卡片關聯擴展
+            is_pronoun: false,
+            selected_device: null,
+          
+            // 7. 查詢/報表相關 (非查詢動作填空或留 null)
+            keyword: undefined,
+            time_range_text: undefined,
+            total_count: 1,
+            items: []
+          },
         };
 
         mockMsg = this.parseRobotMessage(mockMsg);
@@ -554,7 +589,7 @@ Page<PageData, PageCustomMethods>({
     if (typeof index === 'number' && this.data.messages[index]?.isConfirmed) {
       return;
     }
-
+    const savedStaffId = wx.getStorageSync('current_staff_id');
     if (info) {
       request({
         url: '/api/v1/inventories/device/add',
@@ -562,9 +597,14 @@ Page<PageData, PageCustomMethods>({
         data: {
           supplier_name: info.supplier_name,
           supplier_phone: info.supplier_phone,
+          partner_id: info.partner_id,
+          operator_id: savedStaffId,
+          total_amount: info.cost_price,
+          status: 'pending',
           items:[{
             type: info.product_type,
             model_name: info.model || info.model_or_id,
+            serials: [info.sn_code],
             cost_price: info.cost || info.cost_price,
             notes: info.notes || '',
           }]
@@ -627,10 +667,23 @@ Page<PageData, PageCustomMethods>({
         url: '/api/v1/inventories/device/sell',
         method: 'POST',
         data: {
+          // 1. 必填基礎欄位
           model: finalModel,
-          sn_code: finalSnCode,
-          price: info.price || info.sell_price || 0,
-          notes: info.notes || '二手銷售'
+          price: Number(info.price || info.sell_price || 0),
+          payment_method: info.payment_method || '微信',
+          notes: info.notes || '二手銷售',
+        
+          // 2. 設備標識 (sn 與 device_id 二選一或同時帶上)
+          sn: finalSnCode || info.sn || info.sn_code || null,
+          sn_code: finalSnCode || info.sn || info.sn_code || null, // 保持向下相容
+          device_id: info.selected_device ? info.selected_device.id : (info.device_id || null),
+          spec: info.spec || null,
+          quantity: info.quantity || 1,
+        
+          // 3. 客戶資訊 (從 ParsedDeviceData 獲取)
+          customer_name: info.supplier_name || null,
+          customer_phone: info.supplier_phone || null,
+          customer_id: info.customer_id || info.partner_id || null
         }
       })
       .then(() => {
