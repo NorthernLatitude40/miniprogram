@@ -550,7 +550,7 @@ Page<PageData, PageCustomMethods>({
   },
 
   confirmAdd(e: WechatMiniprogram.CustomEvent) {
-    const { info, index } = e.currentTarget.dataset as { info: ParsedDeviceData; index: number };
+    const { info, index } = e.detail as { info: ParsedDeviceData; index: number };
     if (typeof index === 'number' && this.data.messages[index]?.isConfirmed) {
       return;
     }
