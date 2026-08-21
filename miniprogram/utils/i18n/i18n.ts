@@ -6,6 +6,21 @@ import zh_HK from './locales/zh_HK';
 import en from './locales/en';
 import ja from './locales/ja';
 
+// ------------------------------------------------------------------
+// 全局語言變更廣播機制
+// ------------------------------------------------------------------
+type Listener = () => void;
+const listeners = new Set<Listener>();
+
+// 用 WeakMap 把「監聽函數」與「組件實例」關聯起來，
+// 不需要在組件 this 上掛任何額外屬性，避免 TS 類型報錯，
+// 且組件銷毀後 WeakMap 中的引用會自動被垃圾回收。
+const instanceListeners = new WeakMap<WechatMiniprogram.Component.TrivialInstance, Listener>();
+
+function notifyLangChange() {
+  listeners.forEach(fn => fn());
+}
+
 // 2. 字典映射表
 export const translations: Record<string, Record<string, string>> = {
   zh_CN,
@@ -31,7 +46,7 @@ export function getAppLanguage(): string {
 // 4. 全局 t() 翻譯函數（三級兜底機制：當前語言 -> 簡體中文 -> 原始Key）
 export function t(key: string): string {
   const activeLang = getAppLanguage();
-  
+
   if (translations[activeLang]?.[key]) {
     return translations[activeLang][key];
   }
@@ -47,16 +62,36 @@ export const i18nBehavior = Behavior({
     t: {} as Record<string, string>,
     currentLangSetting: 'system'
   },
+  lifetimes: {
+    // 組件掛載時：立即同步一次當前語言 + 訂閱全局語言變化
+    attached() {
+      this.updateLanguage();
+
+      const listener = () => this.updateLanguage();
+      instanceListeners.set(this, listener);
+      listeners.add(listener);
+    },
+    // 組件銷毀時：取消訂閱，避免內存泄漏 / 操作已銷毀實例
+    detached() {
+      const listener = instanceListeners.get(this);
+      if (listener) {
+        listeners.delete(listener);
+        instanceListeners.delete(this);
+      }
+    }
+  },
   methods: {
+    // 讀取當前語言包並同步到組件 data
     updateLanguage() {
       const activeLang = getAppLanguage();
       const savedSetting = wx.getStorageSync('user_language') || 'system';
-      
+
       this.setData({
         t: translations[activeLang] || translations['zh_CN'],
         currentLangSetting: savedSetting
       });
     },
+    // 切換語言：寫入本地存儲 + 更新自己 + 廣播給所有其他組件實例
     setAppLanguage(lang: string) {
       if (lang === 'system') {
         wx.removeStorageSync('user_language');
@@ -64,6 +99,7 @@ export const i18nBehavior = Behavior({
         wx.setStorageSync('user_language', lang);
       }
       this.updateLanguage();
+      notifyLangChange();
     }
   }
 });
