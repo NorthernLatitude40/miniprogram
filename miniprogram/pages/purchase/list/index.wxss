@@ -25,9 +25,11 @@
 }
 
 .search-btn {
+  width: auto !important; /* 强制覆盖微信原生 184px 默认宽度 */
   height: 72rpx !important;
   line-height: 72rpx !important;
   padding: 0 32rpx !important;
+  margin: 0 !important;   /* 顺便重置原生 button 的 margin */
   background: #07c160;
   color: #ffffff;
   font-size: 28rpx;

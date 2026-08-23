@@ -1,5 +1,6 @@
 // pages/search/index.ts
 import { request } from '../../utils/request';
+import { formatToLocalTime } from '../../utils/user';
 
 interface SearchResultItem {
   id: string;
@@ -103,7 +104,7 @@ Page({
           status: s.status || '在库',
           imei: s.imei,
           price: s.cost_price || s.price,
-          date: s.created_at || ''
+          date: formatToLocalTime(s.created_at) || ''
         }));
 
         const orders: SearchResultItem[] = (rawData.orders || []).map((o: any) => ({
@@ -115,7 +116,7 @@ Page({
           orderNo: o.order_no,
           customer: o.customer_name || o.phone,
           price: o.total_amount,
-          date: o.created_at || ''
+          date: formatToLocalTime(o.created_at) || ''
         }));
 
         const total = stocks.length + orders.length;

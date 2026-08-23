@@ -1,10 +1,11 @@
 <!-- pages/search/index.wxml -->
-<view class="search-page" style="padding-top: {{ navBarHeight }}px;">
+<view class="search-page">
+  <!-- 自定義公共頂欄 -->
+  <nav-bar title="{{ lang.sale_mgmt || '搜索' }}"></nav-bar>
+
   <!-- 顶部自定义导航栏与搜索框 -->
-  <view class="nav-header" style="height: {{ navBarHeight }}px; padding-top: {{ statusBarHeight }}px;">
-    <view class="back-btn" bindtap="goBack">
-      <text class="icon-back">←</text>
-    </view>
+  <view class="section-card header-card">
+
     <view class="search-input-box">
       <text class="search-icon">🔍</text>
       <input 

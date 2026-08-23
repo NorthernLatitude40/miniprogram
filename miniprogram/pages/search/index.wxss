@@ -5,26 +5,6 @@
   box-sizing: border-box;
 }
 
-/* 顶部导航栏 */
-.nav-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  padding: 0 24rpx;
-  z-index: 100;
-  border-bottom: 1rpx solid #f3f4f6;
-}
-
-.back-btn {
-  font-size: 36rpx;
-  padding: 10rpx 16rpx 10rpx 0;
-  color: #374151;
-}
-
 .search-input-box {
   flex: 1;
   height: 68rpx;
@@ -33,7 +13,6 @@
   display: flex;
   align-items: center;
   padding: 0 24rpx;
-  margin-right: 120rpx; /* 避开胶囊按钮 */
 }
 
 .search-icon {
@@ -143,14 +122,14 @@
 
 /* 结果列表 */
 .result-list {
-  padding: 24rpx;
+  box-sizing: border-box;
   height: calc(100vh - 200rpx);
 }
 
 .result-card {
   background: #ffffff;
   border-radius: 16rpx;
-  padding: 24rpx;
+  padding: 24rpx 48rpx;
   margin-bottom: 20rpx;
   box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.05);
 }

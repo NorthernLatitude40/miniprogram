@@ -29,6 +29,8 @@ interface ParsedDeviceData {
   action?: 'in' | 'sell' | 'query_stock' | 'query_report' | 'universal_query';
   model?: string;
   model_or_id?: string;
+  serials?: string[];
+  serialsText?: string;  
   sn_code?: string;
   cost?: number;
   cost_price?: number;
@@ -484,6 +486,9 @@ Page<PageData, PageCustomMethods>({
         const defaultReceivedText = (this.data as any).t?.received_command || '已收到指令';
         let rawReply = resData?.reply || defaultReceivedText;
         let parsedData: ParsedDeviceData | null = resData?.parsedData || null;
+        if (parsedData) {
+          parsedData.serialsText = (parsedData.serials || []).join(', ');
+        }
 
         if (typeof rawReply === 'string') {
           try {
@@ -521,18 +526,22 @@ Page<PageData, PageCustomMethods>({
         this.loadDashboardStats();
       })
       .catch((err) => {
+        const serials = ['358902110293841'];
         let mockMsg: ChatMessage = {
           role: 'assistant',
           content: (this.data as any).t?.debug_tip || '【調試提示】Python 後端未連接。若接通，系統將自動識別並生成卡片。',
           parsedData: {
             // 1. 動作與類型標誌
-            type: 'out',
-            action: 'sell',
+            type: 'in',
+            action: 'in',
             product_type: 2, // 1-新機，2-二手機
           
             // 2. 設備基本資訊
             model: 'iPhone 13 128G 黑色',
             model_or_id: 'iPhone 13 128G 黑色',
+            serials: serials,
+            serialsText: (serials).join(', '),
+            
             sn_code: '358902110293841',
             
             // 3. 成本與金額 (同步補齊 cost 與 cost_price 相容欄位)
@@ -604,7 +613,7 @@ Page<PageData, PageCustomMethods>({
           items:[{
             type: info.product_type,
             model_name: info.model || info.model_or_id,
-            serials: [info.sn_code],
+            serials: info.serials,
             cost_price: info.cost || info.cost_price,
             notes: info.notes || '',
           }]
