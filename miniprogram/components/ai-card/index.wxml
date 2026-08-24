@@ -37,7 +37,7 @@
       <!-- 3. 串號/SN（支援單個字串或陣列列表展示） -->
       <view class="info-row" wx:if="{{info.serials && info.serials.length > 0}}">
         <text class="label">串號：</text>
-        <text class="value">{{info.serialsText}}1</text>
+        <text class="value">{{info.serialsText}}</text>
       </view>
       <view class="info-row" wx:elif="{{info.sn || info.sn_code}}">
         <text class="label">串號：</text>
