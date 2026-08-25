@@ -692,7 +692,7 @@ Page<PageData, PageCustomMethods>({
           // 3. 客戶資訊 (從 ParsedDeviceData 獲取)
           customer_name: info.supplier_name || null,
           customer_phone: info.supplier_phone || null,
-          customer_id: info.customer_id || info.partner_id || null
+          customer_id: info.partner_id || null
         }
       })
       .then(() => {

@@ -55,9 +55,9 @@
       </view>
 
       <!-- 5. 銷售對象：客戶資訊 -->
-      <view class="info-row" wx:if="{{info.action === 'sell' && (info.customer_name || info.customer_phone)}}">
+      <view class="info-row" wx:if="{{info.action === 'sell' && (info.supplier_phone || info.supplier_phone)}}">
         <text class="label">客戶：</text>
-        <text class="value">{{info.customer_name || '未命名'}} {{info.customer_phone ? '(' + info.customer_phone + ')' : ''}}</text>
+        <text class="value">{{info.supplier_name || '未命名'}} {{info.supplier_phone ? '(' + info.supplier_phone + ')' : ''}}</text>
       </view>
 
       <!-- 6. 入庫來源：供應商/回收來源資訊 (對應 Tool 的 supplier_name & supplier_phone) -->

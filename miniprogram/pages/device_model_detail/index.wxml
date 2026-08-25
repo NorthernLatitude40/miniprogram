@@ -1,0 +1,53 @@
+<!-- pages/device_model_detail/device_model_detail.wxml -->
+<view class="page-container">
+  <nav-bar title="{{ modelName }} - 屬性配置"></nav-bar>
+
+  <!-- 1. SKU 屬性分類 Tab (顏色/記憶體/版本) -->
+  <view class="tab-bar">
+    <view 
+      wx:for="{{attrTypes}}" 
+      wx:key="key" 
+      class="tab-item {{currentTab === item.key ? 'active' : ''}}"
+      bindtap="onSwitchTab"
+      data-key="{{item.key}}"
+    >
+      {{item.name}}
+    </view>
+  </view>
+
+  <!-- 2. 已綁定的專屬 SKU 標籤網格 -->
+  <view class="content-body">
+    <view class="section-title">已配置的專屬{{currentCategoryName}}：</view>
+    
+    <view class="tag-grid" wx:if="{{attrList.length > 0}}">
+      <view class="tag-chip" wx:for="{{attrList}}" wx:key="id">
+        <text class="chip-label">{{item.attr_value}}</text>
+        <text class="chip-delete" bindtap="onDeleteAttr" data-id="{{item.id}}" data-value="{{item.attr_value}}">✕</text>
+      </view>
+    </view>
+    <view class="empty-tip" wx:else>暫無專屬數據，點擊下方按鈕新增</view>
+  </view>
+
+  <!-- 3. 底部固定新增按鈕 -->
+  <view class="bottom-bar">
+    <button class="btn-add" bindtap="showAddModal">+ 新增{{currentCategoryName}}</button>
+  </view>
+
+  <!-- 4. 新增專屬屬性彈窗 -->
+  <view class="modal-mask" wx:if="{{isModalShow}}">
+    <view class="modal-content">
+      <view class="modal-header">新增 {{modelName}} {{currentCategoryName}}</view>
+      <input 
+        class="modal-input" 
+        placeholder="{{currentTab === 'color' ? '例如: 原色鈦金屬' : (currentTab === 'storage' ? '例如: 512GB' : '例如: 美版雙卡')}}" 
+        value="{{newAttrValue}}"
+        bindinput="onInputAttrValue"
+        focus
+      />
+      <view class="modal-footer">
+        <button class="btn-cancel" bindtap="hideAddModal">取消</button>
+        <button class="btn-confirm" bindtap="onSubmitAttr">確定</button>
+      </view>
+    </view>
+  </view>
+</view>

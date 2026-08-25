@@ -1,0 +1,200 @@
+/* pages/device_models/device_models.wxss */
+
+page {
+  background-color: #f7f8fa;
+  color: #333333;
+  padding-bottom: 140rpx;
+}
+
+.model-container {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- 1. 品牌 Tab 橫向滾動 (修復豎條拉伸) --- */
+.brand-tabs {
+  white-space: nowrap;
+  background-color: #ffffff;
+  padding: 16rpx;
+  height: 88rpx;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.03);
+}
+
+.tab-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 56rpx;
+  padding: 0 32rpx;
+  margin: 0 10rpx;
+  font-size: 28rpx;
+  color: #646566;
+  background-color: #f2f3f5;
+  border-radius: 28rpx;
+  vertical-align: middle;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.tab-item.active {
+  color: #ffffff;
+  background-color: #007aff;
+  font-weight: 600;
+  box-shadow: 0 4rpx 12rpx rgba(0, 122, 255, 0.3);
+}
+
+.tab-item.add-brand-btn {
+  background-color: #eef6ff;
+  color: #007aff;
+  border: 1rpx dashed #007aff;
+}
+
+/* --- 2. 機型卡片列表 --- */
+.list-container {
+  padding: 24rpx 32rpx;
+}
+
+.model-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 28rpx 32rpx;
+  margin-bottom: 20rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.02);
+}
+
+.card-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.model-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.sub-tip {
+  font-size: 22rpx;
+  color: #007aff;
+  margin-top: 6rpx;
+}
+
+.btn-delete {
+  font-size: 26rpx;
+  color: #ff3b30;
+  background-color: #ffe5e5;
+  padding: 10rpx 24rpx;
+  border-radius: 24rpx;
+}
+
+.btn-delete:active {
+  opacity: 0.7;
+}
+
+.empty-tip {
+  text-align: center;
+  color: #969799;
+  font-size: 28rpx;
+  margin-top: 120rpx;
+}
+
+/* --- 3. 底部固定新增按鈕 --- */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  padding: 20rpx 32rpx calc(20rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  z-index: 20;
+}
+
+.btn-add {
+  background-color: #007aff;
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 600;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+  box-shadow: 0 6rpx 18rpx rgba(0, 122, 255, 0.35);
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+.btn-add::after {
+  border: none;
+}
+
+.btn-add:active {
+  background-color: #0062cc;
+}
+
+/* --- 4. 彈窗樣式 --- */
+.modal-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  width: 80%;
+  max-width: 600rpx;
+  background-color: #ffffff;
+  border-radius: 28rpx;
+  padding: 40rpx 32rpx 32rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 32rpx;
+}
+
+.modal-input {
+  background-color: #f7f8fa;
+  padding: 24rpx 28rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  color: #333333;
+  margin-bottom: 40rpx;
+  border: 1rpx solid #eef0f2;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.btn-cancel, .btn-confirm {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 500;
+  border-radius: 40rpx;
+  padding: 0; margin: 0; border: none;
+}
+
+.btn-cancel::after, .btn-confirm::after { border: none; }
+.btn-cancel { background-color: #f2f3f5; color: #646566; }
+.btn-confirm { background-color: #007aff; color: #ffffff; box-shadow: 0 6rpx 16rpx rgba(0, 122, 255, 0.3); }

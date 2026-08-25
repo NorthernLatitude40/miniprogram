@@ -1,6 +1,6 @@
 <view class="container">
   <!-- 自定義公共頂欄 -->
-  <nav-bar title="{{ lang.purchase_mgmt || '進貨管理' }}"></nav-bar>
+  <nav-bar title="{{ lang.purchase_mgmt || '二手機入庫' }}"></nav-bar>
 
   <!-- 1. 供應商 / 客戶資訊卡片 -->
   <partner-select 

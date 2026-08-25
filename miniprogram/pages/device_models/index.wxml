@@ -1,0 +1,76 @@
+<!-- pages/device_models/device_models.wxml -->
+<view class="model-container">
+  <!-- 自定義公共頂欄 -->
+  <nav-bar title="{{ lang.inventory_mgmt || '機型管理' }}"></nav-bar>
+
+  <!-- 1. 品牌 Tab 橫向滾動 (已移除 enable-flex，避免被拉伸成豎條) -->
+  <scroll-view class="brand-tabs" scroll-x scroll-with-animation>
+    <view 
+      wx:for="{{brands}}" 
+      wx:key="*this" 
+      class="tab-item {{currentBrand === item ? 'active' : ''}}"
+      bindtap="onSelectBrand"
+      data-brand="{{item}}"
+    >
+      {{item}}
+    </view>
+
+    <!-- 新增品牌入口按鈕 -->
+    <view class="tab-item add-brand-btn" bindtap="showAddModal" data-type="brand">
+      + 新增品牌
+    </view>
+  </scroll-view>
+
+  <!-- 2. 機型列表 (點擊卡片跳轉 SKU，刪除按鈕用 catchtap 防止冒泡) -->
+  <view class="list-container">
+    <block wx:if="{{modelList.length > 0}}">
+      <view 
+        class="model-card" 
+        wx:for="{{modelList}}" 
+        wx:key="id"
+        bindtap="goToSkuDetail"
+        data-id="{{item.id}}"
+        data-name="{{item.model_name}}"
+      >
+        <view class="card-left">
+          <text class="model-name">{{item.model_name}}</text>
+          <text class="sub-tip">點擊配置專屬 SKU 屬性 ›</text>
+        </view>
+        <view 
+          class="btn-delete" 
+          catchtap="onDeleteModel" 
+          data-id="{{item.id}}" 
+          data-name="{{item.model_name}}"
+        >
+          刪除
+        </view>
+      </view>
+    </block>
+    <view wx:else class="empty-tip">當前品牌暫無機型，點擊下方新增</view>
+  </view>
+
+  <!-- 3. 底部固定新增按鈕 -->
+  <view class="bottom-bar">
+    <button class="btn-add" bindtap="showAddModal" data-type="model">+ 新增 {{currentBrand}} 機型</button>
+  </view>
+
+  <!-- 4. 新增彈窗 (共用：支持新增品牌/機型) -->
+  <view class="modal-mask" wx:if="{{isModalShow}}">
+    <view class="modal-content">
+      <view class="modal-header">
+        {{modalType === 'brand' ? '新增品牌' : '新增 ' + currentBrand + ' 機型 (SPU)'}}
+      </view>
+      <input 
+        class="modal-input" 
+        placeholder="{{modalType === 'brand' ? '請輸入品牌名稱 (如: Honor)' : '請輸入機型名稱 (如: iPhone 15 Pro)'}}" 
+        value="{{inputName}}"
+        bindinput="onInputName"
+        focus
+      />
+      <view class="modal-footer">
+        <button class="btn-cancel" bindtap="hideAddModal">取消</button>
+        <button class="btn-confirm" bindtap="onSubmitModal">確定</button>
+      </view>
+    </view>
+  </view>
+</view>

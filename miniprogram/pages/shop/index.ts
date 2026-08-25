@@ -36,6 +36,7 @@ interface IPageCustom {
   goToCreateShop: () => void;
   onTapStaffPermission: () => void;
   onTapDictionary: () => void;
+  onTapModel: () => void;
 }
 
 Page<IPageData, IPageCustom>({
@@ -100,6 +101,13 @@ Page<IPageData, IPageCustom>({
       url: '/pages/dictionary/index', // 請根據你的實際路由調整路徑
     });
   },
+
+  // 跳轉至字典管理頁面
+  onTapModel() {
+      wx.navigateTo({
+        url: '/pages/device_models/index', // 請根據你的實際路由調整路徑
+      });
+    },
 
   goBack() {
     wx.navigateBack({ delta: 1 });
