@@ -35,6 +35,7 @@ interface IPageCustom {
   onTapShopInfo: () => void;
   goToCreateShop: () => void;
   onTapStaffPermission: () => void;
+  onTapDictionary: () => void;
 }
 
 Page<IPageData, IPageCustom>({
@@ -90,6 +91,13 @@ Page<IPageData, IPageCustom>({
       }
     }).catch((err: any) => {
       console.error('获取店铺信息失败:', err);
+    });
+  },
+
+  // 跳轉至字典管理頁面
+  onTapDictionary() {
+    wx.navigateTo({
+      url: '/pages/dictionary/index', // 請根據你的實際路由調整路徑
     });
   },
 

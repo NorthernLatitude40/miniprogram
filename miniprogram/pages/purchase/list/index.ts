@@ -131,6 +131,13 @@ Page({
     });
   },
 
+  goToCreateDetailForm(e: any) {
+    const type = e.currentTarget.dataset.type; // 'new' | 'used'
+    wx.navigateTo({
+      url: `/pages/stockInNew/index?type=${type}`
+    });
+  },
+
   // 進入單據詳情或辦理入庫
   goToDetail(e: any) {
     const id = e.currentTarget.dataset.id;

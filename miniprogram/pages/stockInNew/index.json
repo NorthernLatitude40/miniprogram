@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "設備資訊",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index",
+    "partner-select": "/components/partner-select/index"
+  }
+}

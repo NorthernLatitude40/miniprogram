@@ -48,9 +48,18 @@
           <text class="arrow">›</text>
         </view>
       </view>
+
+      <!-- 🌟 新增：字典管理入口 -->
+      <view class="menu-item" bindtap="onTapDictionary">
+        <text class="item-title">字典管理</text>
+        <view class="item-right">
+          <text class="item-desc">成色 / 網絡 / 機況</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
     </view>
 
-    <!-- 🌟 新增：底部固定置底按鈕區 -->
+    <!-- 底部固定置底按鈕區 -->
     <view class="bottom-button-placeholder"></view> <!-- 佔位防止內容被擋住 -->
     <view class="bottom-button-wrapper">
       <button class="btn-primary" bindtap="goToCreateShop">

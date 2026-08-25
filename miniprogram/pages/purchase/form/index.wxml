@@ -30,6 +30,44 @@
           <text class="btn-del" wx:if="{{ items.length > 1 }}" data-index="{{ itemIndex }}" bindtap="removeModelItem">刪除機型</text>
         </view>
 
+        <!-- 顏色選擇 -->
+        <view class="tag-section">
+          <view class="sub-label">顏色</view>
+          <scroll-view class="tag-scroll" scroll-x show-scrollbar="{{false}}">
+            <view 
+              wx:for="{{ options.color }}" 
+              wx:key="*this"
+              class="tag-item {{ item.color === itemOpt ? 'active' : '' }}"
+              wx:for-item="itemOpt"
+              data-itemindex="{{ itemIndex }}"
+              data-type="color"
+              data-value="{{ itemOpt }}"
+              bindtap="onSelectModelTag"
+            >
+              {{ itemOpt }}
+            </view>
+          </scroll-view>
+        </view>
+
+        <!-- 內存選擇 -->
+        <view class="tag-section">
+          <view class="sub-label">內存</view>
+          <scroll-view class="tag-scroll" scroll-x show-scrollbar="{{false}}">
+            <view 
+              wx:for="{{ options.storage }}" 
+              wx:key="*this"
+              class="tag-item {{ item.storage === itemOpt ? 'active' : '' }}"
+              wx:for-item="itemOpt"
+              data-itemindex="{{ itemIndex }}"
+              data-type="storage"
+              data-value="{{ itemOpt }}"
+              bindtap="onSelectModelTag"
+            >
+              {{ itemOpt }}
+            </view>
+          </scroll-view>
+        </view>
+
         <!-- 單台成本價輸入框 -->
         <view class="form-item border-none" style="padding: 10rpx 0;">
           <text class="label" style="font-size: 26rpx; color: #666;">單台成本價 (元)</text>

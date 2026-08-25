@@ -1,0 +1,7 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "字典管理",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
+}

@@ -1,0 +1,178 @@
+/* 全局頁面背景與底部留白 */
+page {
+  background-color: #f5f6f8;
+  padding-bottom: 240rpx !important; /* 加大留白，防止底部卡片被 bottom-bar 遮擋 */
+  box-sizing: border-box;
+}
+
+/* 主容器：覆蓋全局 app.wxss 造成的縮放問題 */
+.container {
+  padding: 24rpx;
+  padding-bottom: 240rpx !important;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch !important; /* 強制所有子卡片拉伸至 100% 滿寬 */
+}
+
+/* 統一卡片樣式 */
+.card,
+.section-card {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 20rpx 28rpx;
+  margin-bottom: 24rpx;
+  box-sizing: border-box;
+  width: 100% !important;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.03);
+}
+
+/* 卡片標題與區塊標題 */
+.card-title,
+.section-title {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+}
+
+.card-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+/* 行選單樣式 */
+.cell-row,
+.form-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 96rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.border-bottom {
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.cell-label,
+.label {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 500;
+  flex-shrink: 0;
+  width: 200rpx;
+}
+
+.required {
+  color: #ff4d4f;
+  margin-left: 4rpx;
+}
+
+.cell-value {
+  font-size: 28rpx;
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.text-dark {
+  color: #333333;
+}
+
+.text-placeholder {
+  color: #c0c4cc;
+}
+
+.arrow {
+  color: #c0c4cc;
+  margin-left: 12rpx;
+  font-size: 26rpx;
+}
+
+.input-right,
+.input {
+  text-align: right;
+  font-size: 28rpx;
+  color: #333333;
+  width: 100%;
+  height: 60rpx;
+}
+
+.unit {
+  margin-left: 6rpx;
+  font-size: 28rpx;
+  color: #333333;
+}
+
+.scan-icon {
+  margin-left: 16rpx;
+  font-size: 32rpx;
+  padding: 10rpx;
+  flex-shrink: 0;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* 標籤橫向滾動區塊 */
+.tag-section {
+  padding: 16rpx 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tag-scroll {
+  width: 100%;
+  white-space: nowrap;
+  display: block;
+}
+
+.tag-item {
+  display: inline-block;
+  padding: 12rpx 28rpx;
+  background-color: #f5f6f8;
+  color: #666666;
+  font-size: 24rpx;
+  border-radius: 8rpx;
+  margin-right: 16rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.tag-item.active {
+  background-color: #e8f3ff;
+  color: #2b85e4;
+  font-weight: bold;
+}
+
+/* 底部固定按鈕 */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  padding: 20rpx 30rpx calc(20rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  z-index: 99;
+}
+
+.btn-submit {
+  background-color: #007aff;
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: bold;
+  border-radius: 16rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  width: 100% !important;
+}

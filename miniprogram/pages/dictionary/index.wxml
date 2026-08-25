@@ -1,0 +1,68 @@
+<view class="page-container">
+  <!-- 自定義公共頂欄 -->
+  <nav-bar title="{{ lang.inventory_mgmt || '字典管理' }}"></nav-bar>
+
+  <!-- 頁面主體：依靠自訂頂欄內部實現的佔位或 margin 推進 -->
+  <view class="page-content">
+    <!-- 1. 分類 Tabs -->
+    <scroll-view class="tabs-scroll" scroll-x enable-flex scroll-anchoring>
+      <view 
+        wx:for="{{categories}}" 
+        wx:key="key" 
+        class="tab-item {{currentTab === item.key ? 'active' : ''}}"
+        bindtap="onSwitchTab"
+        data-key="{{item.key}}"
+      >
+        <text class="tab-text">{{item.name}}</text>
+      </view>
+    </scroll-view>
+
+    <!-- 2. 字典列表區域 -->
+    <view class="dict-list">
+      <view class="dict-item" wx:for="{{dictList}}" wx:key="id">
+        <view class="dict-info">
+          <text class="dict-label">{{item.label}}</text>
+          <text class="dict-tag" wx:if="{{item.is_system}}">系統預設</text>
+        </view>
+        
+        <!-- 非系統預設項才允許刪除 -->
+        <view 
+          class="delete-btn" 
+          wx:if="{{!item.is_system}}" 
+          bindtap="onDeleteDict" 
+          data-id="{{item.id}}" 
+          data-label="{{item.label}}"
+        >
+          刪除
+        </view>
+      </view>
+
+      <!-- 空狀態 -->
+      <view class="empty-tip" wx:if="{{dictList.length === 0}}">
+        暫無相關字典數據，點擊下方新增
+      </view>
+    </view>
+  </view>
+
+  <!-- 3. 底部固定新增按鈕 -->
+  <view class="bottom-bar">
+    <button class="btn-primary" bindtap="showAddModal">+ 新增標籤</button>
+  </view>
+
+  <!-- 4. 新增標籤 Modal 彈窗 -->
+  <view class="modal-mask" wx:if="{{isModalShow}}" bindtap="hideAddModal">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-header">新增 {{currentCategoryName}}</view>
+      <input 
+        class="modal-input" 
+        placeholder="請輸入標籤名稱（如：99新、換過電池）" 
+        value="{{newLabel}}" 
+        bindinput="onInputLabel"
+      />
+      <view class="modal-footer">
+        <button class="btn-cancel" bindtap="hideAddModal">取消</button>
+        <button class="btn-confirm" bindtap="onSubmitDict">確定</button>
+      </view>
+    </view>
+  </view>
+</view>

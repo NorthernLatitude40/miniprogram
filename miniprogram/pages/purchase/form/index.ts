@@ -11,9 +11,26 @@ Page({
     partnerId: null as number | null,
     totalAmount: '',
     isSubmitting: false,
+
+    // 1. 表單單選欄位與字典選項
+    form: {
+      network: '',
+      conditionDetail: ''
+    },
+    options: {
+      network: ['全網通 5G', '外版無鎖', '外版有鎖(卡貼)', '移動/聯通/電信單網', 'WiFi版'],
+      conditionDetail: ['全原無拆修', '換過電池', '換過螢幕', '小修/拆修過', '主板大修/擴容', '功能小瑕疵'],
+      color: ['黑色', '白色', '藍色', '粉色', '自然鈦色'],
+      storage: ['128GB', '256GB', '512GB', '1TB']
+    },
+    networkIndex: 0,
+    conditionDetailIndex: 0,
+
     items: [
       { 
         modelName: '', 
+        color: '',
+        storage: '',
         costPrice: '', 
         inputImei: '', 
         devices: [] as Array<{ imei: string }> 
@@ -27,12 +44,41 @@ Page({
     }
   },
 
-  // 自動計算採購總額（單台成本價 × 錄入的串號數量，若無串號則按 1 台計算或為 0）
+  // 2. 網絡選擇事件 handler
+  onNetworkChange(e: any) {
+    const index = e.detail.value;
+    this.setData({
+      networkIndex: index,
+      'form.network': this.data.options.network[index]
+    });
+  },
+
+  // 3. 機況選擇事件 handler
+  onConditionDetailChange(e: any) {
+    const index = e.detail.value;
+    this.setData({
+      conditionDetailIndex: index,
+      'form.conditionDetail': this.data.options.conditionDetail[index]
+    });
+  },
+
+  // 4. 點擊選擇機型顏色與內存 Tag
+  onSelectModelTag(e: any) {
+    const { itemindex, type, value } = e.currentTarget.dataset;
+    const items = [...this.data.items];
+    const currentVal = (items[itemindex] as any)[type];
+
+    // 點擊已選中的標籤可取消選擇，點擊其他則選取
+    (items[itemindex] as any)[type] = currentVal === value ? '' : value;
+
+    this.setData({ items });
+  },
+
+  // 自動計算採購總額
   calculateTotalAmount() {
     let total = 0;
     this.data.items.forEach((item: any) => {
       const price = parseFloat(item.costPrice) || 0;
-      // 若已有錄入串號則按串號數量計算，若尚無串號但有未新增的輸入框內容，視為 1 台
       const count = item.devices.length > 0 ? item.devices.length : (item.inputImei ? 1 : 0);
       total += price * count;
     });
@@ -44,7 +90,6 @@ Page({
 
   onPartnerChange(e: any) {
     const { phone, name, partnerId } = e.detail;
-    // 這裡必須正確 setData，否則父子組件狀態會不同步
     this.setData({
       supplierPhone: phone,
       supplierName: name,
@@ -52,13 +97,10 @@ Page({
     });
   },
 
-
-  // 允許使用者手動覆蓋總金額
   onAmountInput(e: any) {
     this.setData({ totalAmount: e.detail.value });
   },
 
-  // 1. 監聽成本價輸入 + 自動重新計算總金額
   onCostPriceInput(e: any) {
     const index = e.currentTarget.dataset.index;
     const value = e.detail.value;
@@ -72,7 +114,7 @@ Page({
   addModelItem() {
     const items = [
       ...this.data.items, 
-      { modelName: '', costPrice: '', inputImei: '', devices: [] }
+      { modelName: '', color: '', storage: '', costPrice: '', inputImei: '', devices: [] }
     ];
     this.setData({ items }, () => {
       this.calculateTotalAmount();
@@ -95,7 +137,6 @@ Page({
     });
   },
 
-  // 2. 監聽 SN 手動輸入框
   onImeiInput(e: any) {
     const index = e.currentTarget.dataset.index;
     const value = e.detail.value;
@@ -106,7 +147,6 @@ Page({
     });
   },
 
-  // 3. 手動點擊「+ 新增」觸發 + 重新計算總金額
   addImeiManual(e: any) {
     const index = e.currentTarget.dataset.index;
     const currentItem = this.data.items[index];
@@ -117,7 +157,6 @@ Page({
       return;
     }
 
-    // 全局 SN 查重
     const isDuplicate = this.data.items.some(item =>
       item.devices.some(d => d.imei === imeiVal)
     );
@@ -177,7 +216,6 @@ Page({
   },
 
   async submitForm() {
-    // 1. 表單基本校驗
     if (!this.data.supplierPhone) {
       wx.showToast({ title: '請輸入聯繫電話', icon: 'none' });
       return;
@@ -189,11 +227,9 @@ Page({
       return;
     }
   
-    // 2. 防重複提交
     if (this.data.isSubmitting) return;
     this.setData({ isSubmitting: true });
 
-    // 3. 預處理 items：處理 cost_price 數值與自動補入殘留 SN
     const formattedItems = this.data.items.map((item: any) => {
       const serialList = item.devices.map((d: any) => d.imei);
       const pendingInput = (item.inputImei || '').trim();
@@ -207,24 +243,28 @@ Page({
       return {
         type: this.data.type,
         model_name: item.modelName,
+        color: item.color || '',       // 💡 帶上顏色
+        storage: item.storage || '',   // 💡 帶上內存
         serials: serialList,
-        cost_price: isNaN(parsedCost) ? 0 : parsedCost
+        cost_price: isNaN(parsedCost) ? 0 : parsedCost,
+        network: this.data.form.network,
+        condition_detail: this.data.form.conditionDetail
       };
     });
   
-    // 4. 構造請求 Body
     const payload = {
       supplier_phone: this.data.supplierPhone,
       supplier_name: this.data.supplierName || '',
       partner_id: this.data.partnerId,
       total_amount: parseFloat(this.data.totalAmount) || 0,
       status: 'pending',
+      network: this.data.form.network,
+      condition_detail: this.data.form.conditionDetail,
       items: formattedItems
     };
   
     wx.showLoading({ title: '提交中...', mask: true });
   
-    // 5. 調用 API 接口
     request({
       url: '/api/v1/inventories/device/add',
       method: 'POST',

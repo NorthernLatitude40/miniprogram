@@ -20,7 +20,7 @@
       <button class="btn btn-primary" data-type="{{1}}" bindtap="goToCreateForm">
         + {{ lang.new_device_in || '新機入庫' }}
       </button>
-      <button class="btn btn-secondary" data-type="{{2}}" bindtap="goToCreateForm">
+      <button class="btn btn-secondary" data-type="{{2}}" bindtap="goToCreateDetailForm">
         + {{ lang.used_device_in || '二手機入庫' }}
       </button>
     </view>

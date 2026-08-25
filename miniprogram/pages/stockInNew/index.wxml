@@ -1,0 +1,219 @@
+<view class="container">
+  <!-- 自定義公共頂欄 -->
+  <nav-bar title="{{ lang.purchase_mgmt || '進貨管理' }}"></nav-bar>
+
+  <!-- 1. 供應商 / 客戶資訊卡片 -->
+  <partner-select 
+    phone="{{ supplierPhone }}"
+    name="{{ supplierName }}"
+    partnerId="{{ partnerId }}"
+    bind:change="onPartnerChange"
+  />
+
+  <!-- 卡片主體 -->
+  <view class="card">
+    
+    <!-- 機型 -->
+    <picker bindchange="onModelPickerChange" value="{{modelIndex}}" range="{{modelNames}}">
+      <view class="cell-row border-bottom">
+        <view class="cell-label">機型 <text class="required">*</text></view>
+        <view class="cell-value flex-center">
+          <text class="{{form.model ? 'text-dark' : 'text-placeholder'}}">{{form.model || '請選擇'}}</text>
+          <text class="arrow">></text>
+        </view>
+      </view>
+    </picker>
+
+    <!-- 成色 (單選 Tag + 橫向滾動) -->
+    <view class="tag-section">
+      <view class="section-title">成色</view>
+      <scroll-view class="tag-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+        <view 
+          wx:for="{{options.condition}}" 
+          wx:key="*this"
+          class="tag-item {{form.condition === item ? 'active' : ''}}"
+          data-type="condition"
+          data-value="{{item}}"
+          bindtap="onSelectTag"
+        >
+          {{item}}
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 顏色 -->
+    <view class="tag-section">
+      <view class="section-title">顏色</view>
+      <scroll-view class="tag-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+        <view 
+          wx:for="{{options.color}}" 
+          wx:key="*this"
+          class="tag-item {{form.color === item ? 'active' : ''}}"
+          data-type="color"
+          data-value="{{item}}"
+          bindtap="onSelectTag"
+        >
+          {{item}}
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 內存 -->
+    <view class="tag-section">
+      <view class="section-title">內存</view>
+      <scroll-view class="tag-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+        <view 
+          wx:for="{{options.storage}}" 
+          wx:key="*this"
+          class="tag-item {{form.storage === item ? 'active' : ''}}"
+          data-type="storage"
+          data-value="{{item}}"
+          bindtap="onSelectTag"
+        >
+          {{item}}
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 版本 -->
+    <view class="tag-section">
+      <view class="section-title">版本</view>
+      <scroll-view class="tag-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+        <view 
+          wx:for="{{options.version}}" 
+          wx:key="*this"
+          class="tag-item {{form.version === item ? 'active' : ''}}"
+          data-type="version"
+          data-value="{{item}}"
+          bindtap="onSelectTag"
+        >
+          {{item}}
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 電池健康值 -->
+    <view class="cell-row border-bottom">
+      <view class="cell-label">電池健康值</view>
+      <view class="cell-value flex-center">
+        <input 
+          class="input-right" 
+          type="number" 
+          placeholder="請輸入" 
+          value="{{form.battery}}"
+          data-field="battery"
+          bindinput="onInputChange"
+        />
+        <text wx:if="{{form.battery}}" class="unit">%</text>
+      </view>
+    </view>
+
+    <!-- 系統 -->
+    <view class="cell-row border-bottom">
+      <view class="cell-label">系統</view>
+      <view class="cell-value">
+        <input 
+          class="input-right" 
+          placeholder="請輸入" 
+          placeholder-class="text-placeholder"
+          value="{{form.system}}"
+          data-field="system"
+          bindinput="onInputChange"
+        />
+      </view>
+    </view>
+
+    <!-- 網絡 -->
+    <picker bindchange="onNetworkChange" value="{{networkIndex}}" range="{{options.network}}">
+      <view class="cell-row border-bottom">
+        <view class="cell-label">網絡</view>
+        <view class="cell-value flex-center">
+          <text class="{{form.network ? '' : 'text-placeholder'}}">{{form.network || '請選擇'}}</text>
+          <text class="arrow">></text>
+        </view>
+      </view>
+    </picker>
+
+    <!-- 機況 -->
+    <picker bindchange="onConditionDetailChange" value="{{conditionDetailIndex}}" range="{{options.conditionDetail}}">
+      <view class="cell-row">
+        <view class="cell-label">機況</view>
+        <view class="cell-value flex-center">
+          <text class="{{form.conditionDetail ? '' : 'text-placeholder'}}">{{form.conditionDetail || '請選擇'}}</text>
+          <text class="arrow">></text>
+        </view>
+      </view>
+    </picker>
+
+  </view>
+
+  <!-- IMEI & SN 卡片區塊 -->
+  <view class="card">
+    <!-- IMEI -->
+    <view class="cell-row border-bottom">
+      <view class="cell-label">IMEI</view>
+      <view class="cell-value flex-center">
+        <input 
+          class="input-right" 
+          placeholder="請掃描或輸入" 
+          placeholder-class="text-placeholder"
+          value="{{form.imei}}"
+          data-field="imei"
+          bindinput="onInputChange"
+        />
+        <view class="scan-icon" data-field="imei" bindtap="onScanCode">📷</view>
+      </view>
+    </view>
+
+    <!-- SN -->
+    <view class="cell-row">
+      <view class="cell-label">SN</view>
+      <view class="cell-value flex-center">
+        <input 
+          class="input-right" 
+          placeholder="請掃描或輸入" 
+          placeholder-class="text-placeholder"
+          value="{{form.sn}}"
+          data-field="sn"
+          bindinput="onInputChange"
+        />
+        <view class="scan-icon" data-field="sn" bindtap="onScanCode">📷</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 過保狀態卡片區塊 -->
+  <view class="card">
+    <view class="cell-row">
+      <view class="cell-label">已過保</view>
+      <switch 
+        checked="{{form.isOutofWarranty}}" 
+        color="#2b85e4" 
+        bindchange="onSwitchChange"
+      />
+    </view>
+  </view>
+
+  <!-- 3. 結算金額卡片 -->
+  <view class="card">
+    <view class="section-title">3. 結算金額</view>
+    <view class="cell-row">
+      <view class="cell-label">採購總額 (元)</view>
+      <view class="cell-value">
+        <input 
+          class="input-right" 
+          type="digit" 
+          placeholder="0.00" 
+          placeholder-class="text-placeholder"
+          value="{{ totalAmount }}"
+          bindinput="onAmountInput"
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部固定按鈕 -->
+  <view class="bottom-bar">
+    <button class="btn-submit" bindtap="onSubmit">確認添加</button>
+  </view>
+</view>
