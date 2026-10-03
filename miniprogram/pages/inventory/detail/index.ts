@@ -37,7 +37,7 @@ Page({
     this.setData({ loading: true });
     try {
       const res: any = await request({
-        url: `/api/v1/inventories/inventory/detail/${id}`,
+        url: `/api/v1/inventory/detail/${id}`,
         method: 'GET'
       });
       
@@ -77,7 +77,7 @@ Page({
     wx.showLoading({ title: '處理中...' });
     try {
       const res: any = await request({
-        url: `/api/v1/inventories/status`,
+        url: `/api/v1/status`,
         method: 'POST',
         data: {
           id: this.data.device?.id || this.data.inventoryId,

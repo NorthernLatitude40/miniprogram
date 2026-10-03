@@ -75,7 +75,7 @@ Page({
       }
 
       const res: any = await request({
-        url: '/api/v1/purchases/list', // 請調整為你後端的實際 API 路徑
+        url: '/api/v1/inventory/list',
         method: 'GET',
         data: queryParams
       });

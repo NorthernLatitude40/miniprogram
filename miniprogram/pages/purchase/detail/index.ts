@@ -25,7 +25,7 @@ Page({
     try {
       // 請根據實際後端路由修改 URL（例如 /api/purchase/detail 或 /api/inventory/detail）
       const res: any = await request({
-        url: `/api/v1/purchases/detail/${id}`,
+        url: `/api/v1/inventory/detail/${id}`,
         method: 'GET'
       });
 
@@ -76,7 +76,7 @@ Page({
           try {
             // 調用後端確認入庫 API
             const result: any = await request({
-              url: `/api/v1/purchases/confirm-inbound`,
+              url: `/api/v1/inventory/device/add`,
               method: 'POST',
               data: { id: this.data.orderId }
             });

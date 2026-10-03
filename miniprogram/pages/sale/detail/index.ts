@@ -23,7 +23,7 @@ Page({
     this.setData({ loading: true });
     try {
       const res: any = await request({
-        url: `/api/v1/inventories/detail/${id}`,
+        url: `/api/v1/inventory/detail/${id}`,
         method: 'GET'
       });
 
@@ -69,7 +69,7 @@ Page({
           wx.showLoading({ title: '處理中...' });
           try {
             const result: any = await request({
-              url: `/api/v1/inventories/refund`,
+              url: `/api/v1/inventory/refund`,
               method: 'POST',
               data: { id: this.data.orderId }
             });
