@@ -45,25 +45,30 @@ Component({
       this.setData({ inputMsg: '', showMenu: false });
     },
 
-    // 點擊業務菜單項（快捷發送指令或跳轉）
+    // 点击业务菜单项（快捷发送指令或跳转）
     onMenuItemClick(e: WechatMiniprogram.TouchEvent) {
       const { action, text } = e.currentTarget.dataset;
-
-      // 如果有對應頁面路由
-      if (action === 'goToMy') {
-        wx.navigateTo({ url: '/pages/my/index' });
+      console.log('--------------------------',action)
+      // 如果有对应页面路由
+      // if (action === 'goToMy') {
+      //   wx.navigateTo({ url: '/pages/my/index' });
+      //   return;
+      // }
+      // if (action === 'goToBusiness') {
+      //   wx.navigateTo({ url: '/pages/business/index' });
+      //   return;
+      // }
+      // 新增：跳转到月历预约页面
+      if (action === 'goToBooking') {
+        wx.navigateTo({ url: '/pages/booking/month/index' });
         return;
       }
-      if (action === 'goToBusiness') {
-        wx.navigateTo({ url: '/pages/business/index' });
-        return;
-      }
 
-      // 若點擊的是發送指令（如：查庫存）
-      if (text) {
-        this.triggerEvent('sendMessage', { text });
-        this.setData({ showMenu: false });
-      }
+      // 若点击的是发送指令（如：查库存）
+      // if (text) {
+      //   this.triggerEvent('sendMessage', { text });
+      //   this.setData({ showMenu: false });
+      // }
     }
   }
 });

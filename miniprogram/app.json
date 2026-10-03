@@ -23,7 +23,8 @@
     "pages/stockInNew/index",
     "pages/dictionary/index",
     "pages/device_models/index",
-    "pages/device_model_detail/index"
+    "pages/device_model_detail/index",
+    "pages/booking/month/index"
   ],
   "networkTimeout": {
     "request": 120000,

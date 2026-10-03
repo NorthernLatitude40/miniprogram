@@ -1,0 +1,67 @@
+.calendar-card {
+  background: #fff;
+  border-radius: 16rpx;
+  margin: 20rpx;
+  overflow: hidden;
+}
+
+/* 日历角标样式 */
+.day-has-event .t-calendar__day-suffix {
+  color: #0052d9 !important;
+  font-weight: 500;
+}
+.day-has-danger .t-calendar__day-suffix {
+  color: #e34d59 !important;
+}
+
+/* 底部事件列表样式 */
+.events-panel {
+  margin: 20rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+  border-bottom: 1rpx solid #eee;
+  padding-bottom: 12rpx;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+  border-radius: 8rpx;
+  background-color: #f6f8fa;
+  border-left: 8rpx solid #0052d9; /* 默认蓝色边条 */
+}
+
+/* 针对不同类型的事件显示不同左边条样式 */
+.event-item.type-warning { border-left-color: #ed7b14; }
+.event-item.type-danger { border-left-color: #e34d59; }
+.event-item.type-success { border-left-color: #2ba471; }
+
+.event-time {
+  font-size: 24rpx;
+  color: #666;
+  width: 100rpx;
+}
+
+.event-title {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.empty-tip {
+  text-align: center;
+  color: #999;
+  font-size: 26rpx;
+  padding: 40rpx 0;
+}
