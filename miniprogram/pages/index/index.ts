@@ -247,7 +247,7 @@ Page<PageData, PageCustomMethods>({
 
   fetchStockList() {
     request<{ items?: StockItem[] }>({
-      url: '/api/v1/inventories/list?status=1',
+      url: '/api/v1/inventory/list?status=1',
       method: 'GET',
       header: {
         'X-Shop-Id': String(getCurrentShopId()),
@@ -601,7 +601,7 @@ Page<PageData, PageCustomMethods>({
     const savedStaffId = wx.getStorageSync('current_staff_id');
     if (info) {
       request({
-        url: '/api/v1/inventories/device/add',
+        url: '/api/v1/inventory/device/add',
         method: 'POST',
         data: {
           supplier_name: info.supplier_name,
@@ -673,7 +673,7 @@ Page<PageData, PageCustomMethods>({
       const finalSnCode = info.selected_device ? (info.selected_device.sn_code || '') : (info.sn_code || '');
 
       request({
-        url: '/api/v1/inventories/device/sell',
+        url: '/api/v1/inventory/device/sell',
         method: 'POST',
         data: {
           // 1. 必填基礎欄位

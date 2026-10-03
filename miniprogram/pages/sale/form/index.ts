@@ -65,7 +65,7 @@ Page({
 
     try {
       const result: any = await request({
-        url: '/api/v1/inventories/search_by_sn',
+        url: '/api/v1/search_by_sn',
         method: 'GET',
         data: { sn_code: cleanImei }
       });
@@ -194,7 +194,7 @@ Page({
       };
 
       await request({
-        url: '/api/v1/inventories/create',
+        url: '/api/v1/inventory/create',
         method: 'POST',
         data: payload
       });

@@ -65,7 +65,7 @@ Page({
   // 獲取字典數據並初始化預設值
   async fetchDeviceOptions() {
     try {
-      const res: any = await request({ url: '/api/v1/inventories/device/options', method: 'GET' });
+      const res: any = await request({ url: '/api/v1/inventory/device/options', method: 'GET' });
 
       if (res.code === 200) {
         const models: DeviceModelDict[] = res.data.models || [];
@@ -225,7 +225,7 @@ Page({
     wx.showLoading({ title: '正在提交入庫...', mask: true });
 
     try {
-      await request({ url: '/api/v1/inventories/device/add-detailed', method: 'POST', data: payload });
+      await request({ url: '/api/v1/inventory/device/add-detailed', method: 'POST', data: payload });
       wx.hideLoading();
       this.setData({ submitting: false });
 

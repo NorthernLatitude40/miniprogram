@@ -266,7 +266,7 @@ Page({
     wx.showLoading({ title: '提交中...', mask: true });
   
     request({
-      url: '/api/v1/inventories/device/add',
+      url: '/api/v1/inventory/device/add',
       method: 'POST',
       data: payload
     }).then((res: any) => {
