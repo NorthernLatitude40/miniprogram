@@ -23,7 +23,6 @@
   },
   "homepage": "https://github.com/NorthernLatitude40/miniprogram#readme",
   "dependencies": {
-    "@miniprogram-i18n/core": "^1.0.0-rc.12",
-    "tdesign-miniprogram": "^1.16.1"
+    "@miniprogram-i18n/core": "^1.0.0-rc.12"
   }
 }

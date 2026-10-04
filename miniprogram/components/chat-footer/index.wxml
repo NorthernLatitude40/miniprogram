@@ -38,7 +38,7 @@
         <text class="menu-text">{{t.new_device_in_out || '新機出入庫'}}</text>
       </view>
 
-      <view class="menu-item" bindtap="onMenuItemClick" data-text="維修開單"  data-action="goToBooking">
+      <view class="menu-item" bindtap="onMenuItemClick" data-text="維修開單">
         <text class="menu-icon">🔧</text>
         <text class="menu-text">{{t.repair_order || '維修開單'}}</text>
       </view>

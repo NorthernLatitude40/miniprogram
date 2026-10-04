@@ -1,6 +1,0 @@
-{
-  "usingComponents": {
-    "nav-bar": "/components/nav-bar/index",
-    "t-calendar": "/miniprogram_npm/tdesign-miniprogram/calendar/calendar"
-  }
-}
