@@ -2,18 +2,19 @@ import { request } from '../../utils/request';
 import { fetchUserInfo } from '../../utils/user';
 
 interface WxLoginResponse {
-  code: number;
-  message: string;
+  access_token: string;
+  token_type: string;
+  code?: number;
+  message?: string;
+  detail?: string;
   data?: {
-    token: string;
-    user_info: {
+    user_info?: {
       id: number;
       nickname: string;
       role: string;
       shop_id?: number;
     };
   };
-  detail?: string;
 }
 
 interface ShopItem {
@@ -56,15 +57,19 @@ Page({
           method: 'POST',
           data: { code: wxRes.code }
         }).then((res: any) => {
+          // 兼容 response 拦截器解构与未解构的情况
           const resData = (res.data || res) as WxLoginResponse;
 
-          if (resData && (resData.code === 200 || (resData as any).token)) {
-            const dataObj: any = resData.data || resData;
+          // 🌟 修复关键：同时兼容 access_token (OAuth2 标准) 与 token，并兼容 resData.code === 200
+          const accessToken = resData?.access_token || (resData as any)?.token || resData?.data?.token;
 
+          if (accessToken || resData?.code === 200) {
             // 存储 Token 凭证
-            wx.setStorageSync('token', dataObj.token);
+            wx.setStorageSync('token', accessToken);
+
+            const userInfo = resData.data?.user_info;
             // 3. 登录成功后，获取用户关联的所有店铺列表，判断进入哪个店铺
-            self.loadShopListAndNavigate(dataObj.user_info);
+            self.loadShopListAndNavigate(userInfo);
 
           } else {
             wx.hideLoading();
@@ -134,7 +139,7 @@ Page({
         shops.find(s => userInfoFromLogin?.shop_id && String(s.id) === String(userInfoFromLogin.shop_id)) || 
         shops[0];
 
-      // 🌟 写入全局缓存（修复 Bug：正确存入数字 staff_id，非字符串 role）
+      // 🌟 写入全局缓存（正确存入数字 staff_id，非字符串 role）
       wx.setStorageSync('current_shop_id', targetShop.id);
       wx.setStorageSync('current_staff_id', targetShop.staff_id);
       wx.setStorageSync('role', targetShop.role || userInfoFromLogin?.role || 'staff');

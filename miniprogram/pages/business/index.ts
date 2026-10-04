@@ -343,10 +343,10 @@ Page({
     wx.navigateTo({ url: '/pages/sale/list/index' });
   },
   goToNewStock() {
-    wx.navigateTo({ url: '/pages/inventory/list/index?type=new' });
+    wx.navigateTo({ url: '/pages/inventories/list/index?type=new' });
   },
   goToUsedStock() {
-    wx.navigateTo({ url: '/pages/inventory/list/index?type=used' });
+    wx.navigateTo({ url: '/pages/inventories/list/index?type=used' });
   },
   goToMy() {
     wx.navigateTo({ url: '/pages/my/index' });

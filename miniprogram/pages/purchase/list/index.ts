@@ -75,7 +75,7 @@ Page({
       }
 
       const res: any = await request({
-        url: '/api/v1/inventory/list',
+        url: '/api/v1/inventories/list',
         method: 'GET',
         data: queryParams
       });
