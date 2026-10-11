@@ -23,34 +23,36 @@ Page({
     this.setData({ loading: true });
     try {
       const res: any = await request({
-        url: `/api/v1/inventory/detail/${id}`,
+        url: `/api/v1/inventories/detail/${id}`,
         method: 'GET'
       });
 
-      if (res && res.code === 200 && res.data) {
-        const raw = res.data;
-        const orderData = {
-          id: raw.id,
-          orderSn: raw.order_sn || `SO-${raw.id}`,
-          status: raw.status === 2 ? 'completed' : 'returned',
-          customerName: raw.partner_name || '散客',
-          customerPhone: raw.partner_phone || '-',
-          totalAmount: raw.total_amount ?? 0,
-          createdAt: formatToLocalTime(raw.created_at) || '',
-          devices: (raw.devices || []).map((item: any) => ({
-            modelName: item.model_name || '未知機型',
-            imei: item.imei || item.sn || '-',
-            price: item.price ?? 0
-          }))
-        };
+      // 檢查 res 是否存在，並相容「res 本身就是 data」或「res.data 是 data」的情況
+      const raw = res?.data || res || {};
+      const orderInfo = raw.order || {};
+      const items = raw.items || [];
 
-        this.setData({ order: orderData });
-      } else {
-        wx.showToast({ title: res.msg || '獲取詳情失敗', icon: 'none' });
-      }
-    } catch (err) {
+      const orderData = {
+        id: orderInfo.id,
+        orderSn: orderInfo.order_sn || `SO-${orderInfo.id}`,
+        status: orderInfo.payment_status === 1 ? 'completed' : 'pending',
+        customerName: orderInfo.customer_name || '散客',
+        customerPhone: orderInfo.customer_phone || '-',
+        totalAmount: orderInfo.total_amount ?? 0,
+        createdAt: formatToLocalTime(orderInfo.created_at) || '',
+        devices: items.map((item: any) => ({
+          modelName: item.model_name || '未知機型',
+          imei: item.imei || item.sn || '-',
+          price: item.selling_price ?? 0
+        }))
+      };
+
+      this.setData({ order: orderData });
+
+    } catch (err: any) {
       console.error('獲取銷售單詳情異常：', err);
-      wx.showToast({ title: '網路異常，請重試', icon: 'none' });
+      const errorMsg = err.data?.detail || err.data?.title || err.message || '網路異常，請重試';
+      wx.showToast({ title: errorMsg, icon: 'none' });
     } finally {
       this.setData({ loading: false });
     }

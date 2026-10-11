@@ -85,7 +85,7 @@ Page({
 
       // 調用合併後的通用單據列表接口
       const res: any = await request({
-        url: '/api/v1/inventories/list',
+        url: '/api/v1/purchases/list',
         method: 'GET',
         data: queryParams
       });

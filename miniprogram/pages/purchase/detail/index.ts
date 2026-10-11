@@ -25,7 +25,7 @@ Page({
     try {
       // 請根據實際後端路由修改 URL（例如 /api/purchase/detail 或 /api/inventory/detail）
       const res: any = await request({
-        url: `/api/v1/inventory/detail/${id}`,
+        url: `/api/v1/purchases/detail/${id}`,
         method: 'GET'
       });
 

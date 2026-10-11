@@ -246,27 +246,27 @@ Page<PageData, PageCustomMethods>({
   },
 
   fetchStockList() {
-    // request<{ items?: StockItem[] }>({
-    //   url: '/api/v1/inventories/list?stock_status=1',
-    //   method: 'GET',
-    //   header: {
-    //     'X-Shop-Id': String(getCurrentShopId()),
-    //     'X-User-Role': getCurrentUserRole(),
-    //   },
-    // })
-    //   .then((resData) => {
-    //     if (resData && resData.items) {
-    //       const costText = (this.data as any).t?.cost || '成本';
-    //       const formattedList: StockItem[] = resData.items.map((item) => ({
-    //         ...item,
-    //         display_name: `${item.title || item.model} ${item.spec ? '(' + item.spec + ')' : ''} - ${costText}￥${item.purchase_price || item.cost || 0}`
-    //       }));
-    //       this.setData({ stockList: formattedList });
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     console.error('獲取庫存列表失敗:', err);
-    //   });
+    request<{ items?: StockItem[] }>({
+      url: '/api/v1/inventories/list?stock_status=1',
+      method: 'GET',
+      header: {
+        'X-Shop-Id': String(getCurrentShopId()),
+        'X-User-Role': getCurrentUserRole(),
+      },
+    })
+      .then((resData) => {
+        if (resData && resData.items) {
+          const costText = (this.data as any).t?.cost || '成本';
+          const formattedList: StockItem[] = resData.items.map((item) => ({
+            ...item,
+            display_name: `${item.title || item.model} ${item.spec ? '(' + item.spec + ')' : ''} - ${costText}￥${item.purchase_price || item.cost || 0}`
+          }));
+          this.setData({ stockList: formattedList });
+        }
+      })
+      .catch((err) => {
+        console.error('獲取庫存列表失敗:', err);
+      });
   },
 
   parseRobotMessage(robotMsg: ChatMessage): ChatMessage {

@@ -113,7 +113,7 @@ Page({
       }
 
       const res: any = await request({
-        url: '/api/v1/list',
+        url: '/api/v1/inventories/list',
         method: 'GET',
         data: queryParams
       });

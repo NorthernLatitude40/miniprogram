@@ -37,7 +37,7 @@ Page({
     this.setData({ loading: true });
     try {
       const res: any = await request({
-        url: `/api/v1/inventory/detail/${id}`,
+        url: `/api/v1/inventories/inventory/detail/${id}`,
         method: 'GET'
       });
       
